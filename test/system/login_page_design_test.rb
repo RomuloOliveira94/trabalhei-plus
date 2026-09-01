@@ -33,6 +33,20 @@ class LoginPageDesignTest < ApplicationSystemTestCase
     assert_equal "center", wrapper.native.style("align-items")
   end
 
+  test "desktop: sign-in card is vertically centered at 1280x800" do
+    page.current_window.resize_to(1280, 800)
+    visit new_user_session_path
+
+    box = page.evaluate_script("document.querySelector('.max-w-md').getBoundingClientRect()")
+    viewport_height = page.evaluate_script("window.innerHeight")
+
+    card_center = box["top"] + box["height"] / 2
+    viewport_center = viewport_height / 2
+    # The card must sit at the viewport center (within 40px), not pushed down
+    # by the header + main margin.
+    assert_in_delta viewport_center, card_center, 40
+  end
+
   test "mobile: card fills most of the viewport width with no horizontal scroll" do
     page.current_window.resize_to(375, 812)
     visit new_user_session_path

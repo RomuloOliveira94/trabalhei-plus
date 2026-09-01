@@ -1,7 +1,10 @@
 <%# Shared auth card wrapper (Phase 6). Centered card on a light gray
     backdrop, mobile-first (full width on small screens, max-w-md on desktop).
-    Used by the sign-in, sign-up and password-reset pages. %>
-<div class="flex min-h-[calc(100vh-4rem)] items-center justify-center py-8">
+    Used by the sign-in, sign-up and password-reset pages.
+    The layout main adds mt-8 (2rem) below the h-16 header (4rem); -mt-24
+    cancels both so the wrapper spans the full viewport and the card is
+    vertically centered on desktop (min-h-screen + items-center). %>
+<div class="-mt-24 flex min-h-screen items-center justify-center py-8">
   <div class="w-full max-w-md rounded-xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
     <div class="text-center">
       <p class="text-2xl font-bold text-red-600"><%= t("layouts.application.app_name") %></p>
