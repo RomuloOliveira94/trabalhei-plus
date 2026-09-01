@@ -15,6 +15,21 @@ en:
     attributes:
       user:
         name: "Name"
+      overtime:
+        start_at: "Start"
+        end_at: "End"
+        description: "Description"
+    errors:
+      models:
+        overtime:
+          attributes:
+            end_at:
+              after_start_at: "must be after the start"
+              minimum_duration: "must last at least %{count} minutes"
+  time:
+    formats:
+      short_date: "%d/%m/%Y"
+      hours_minutes: "%H:%M"
   layouts:
     application:
       app_name: "Trabalhei a Mais"
@@ -22,5 +37,49 @@ en:
       sign_out: "Sign out"
   home:
     show:
-      welcome: "Welcome, %{name}!"
-      placeholder_notice: "The overtime dashboard is coming soon — hour tracking lands in the next phase."
+      headline: "Trabalhei a Mais"
+      tagline: "Track your overtime and hand the HR department proof of your extra hours."
+      sign_in: "Sign in"
+      sign_up: "Sign up"
+  overtimes:
+    index:
+      title: "My overtime"
+      period: "Period: %{from} to %{to}"
+      total_hours: "Total hours in the period"
+      new_overtime: "New overtime"
+      filter_from: "From"
+      filter_to: "To"
+      filter_submit: "Filter"
+      column_date: "Date"
+      column_start: "Start"
+      column_end: "End"
+      column_duration: "Duration"
+      column_description: "Description"
+      column_actions: "Actions"
+      empty: "No overtime registered in this period."
+      empty_cta: "Register your first overtime"
+    overtime_actions:
+      edit: "Edit"
+      delete: "Delete"
+      confirm_delete: "Delete this overtime?"
+    new:
+      title: "New overtime"
+    edit:
+      title: "Edit overtime"
+    form:
+      submit: "Save"
+      cancel: "Cancel"
+      error_notice:
+        one: "1 error prevented this overtime from being saved:"
+        other: "%{count} errors prevented this overtime from being saved:"
+    show:
+      title: "Overtime details"
+      duration: "Duration"
+      edit: "Edit"
+      back: "Back"
+    create:
+      created: "Overtime registered successfully."
+    update:
+      updated: "Overtime updated successfully."
+    destroy:
+      destroyed: "Overtime deleted successfully."

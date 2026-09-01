@@ -1,0 +1,30 @@
+# Dates are generated relative to Date.current so the "default filter is the
+# current month" behaviour is stable whenever the suite runs.
+<%
+  month_start = Date.current.beginning_of_month
+  prev_month_start = Date.current.prev_month.beginning_of_month
+%>
+one:
+  user: one
+  start_at: <%= Time.zone.local(month_start.year, month_start.month, month_start.day, 18, 0, 0) %>
+  end_at: <%= Time.zone.local(month_start.year, month_start.month, month_start.day, 21, 30, 0) %>
+  description: "Fechamento do relatório mensal"
+
+previous_month:
+  user: one
+  start_at: <%= Time.zone.local(prev_month_start.year, prev_month_start.month, prev_month_start.day, 9, 0, 0) %>
+  end_at: <%= Time.zone.local(prev_month_start.year, prev_month_start.month, prev_month_start.day, 11, 0, 0) %>
+  description: "Suporte ao deploy de sábado"
+
+discarded:
+  user: one
+  start_at: <%= Time.zone.local(month_start.year, month_start.month, month_start.day, 8, 0, 0) %>
+  end_at: <%= Time.zone.local(month_start.year, month_start.month, month_start.day, 8, 10, 0) %>
+  description: "Registro lançado por engano"
+  discarded_at: <%= Time.current %>
+
+from_bruno:
+  user: two
+  start_at: <%= Time.zone.local(month_start.year, month_start.month, month_start.day, 22, 0, 0) %>
+  end_at: <%= Time.zone.local(month_start.year, month_start.month, month_start.day, 23, 0, 0) %>
+  description: "Plantão do Bruno"

@@ -1,0 +1,8 @@
+<tr class="hover:bg-gray-50">
+  <td class="whitespace-nowrap px-4 py-3 font-medium text-gray-900"><%= l(overtime.start_at, format: :short_date) %></td>
+  <td class="whitespace-nowrap px-4 py-3"><%= l(overtime.start_at, format: :hours_minutes) %></td>
+  <td class="whitespace-nowrap px-4 py-3"><%= l(overtime.end_at, format: :hours_minutes) %></td>
+  <td class="whitespace-nowrap px-4 py-3 font-semibold"><%= number_with_precision(overtime.duration_hours_decimal, precision: 1, separator: ",", delimiter: ".") %>h</td>
+  <td class="max-w-[24rem] truncate px-4 py-3 text-gray-600" title="<%= overtime.description %>"><%= overtime.description %></td>
+  <td class="whitespace-nowrap px-4 py-3 text-right"><%= render "overtime_actions", overtime: overtime %></td>
+</tr>

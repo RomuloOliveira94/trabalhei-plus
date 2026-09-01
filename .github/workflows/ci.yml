@@ -114,6 +114,9 @@ jobs:
         with:
           bundler-cache: true
 
+      - name: Build Tailwind CSS (system tests assert responsive visibility)
+        run: bin/rails tailwindcss:build
+
       - name: Run System Tests
         env:
           RAILS_ENV: test

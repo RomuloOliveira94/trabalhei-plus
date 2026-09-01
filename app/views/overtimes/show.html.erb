@@ -1,0 +1,30 @@
+<div class="w-full max-w-xl">
+  <h1 class="text-2xl font-bold text-gray-900"><%= t(".title") %></h1>
+
+  <dl class="mt-6 space-y-4 rounded-lg border border-gray-100 p-5 text-sm">
+    <div class="flex justify-between gap-4">
+      <dt class="font-medium text-gray-500"><%= Overtime.human_attribute_name(:start_at) %></dt>
+      <dd class="text-gray-900"><%= l(@overtime.start_at, format: :short_date) %> · <%= l(@overtime.start_at, format: :hours_minutes) %></dd>
+    </div>
+    <div class="flex justify-between gap-4">
+      <dt class="font-medium text-gray-500"><%= Overtime.human_attribute_name(:end_at) %></dt>
+      <dd class="text-gray-900"><%= l(@overtime.end_at, format: :short_date) %> · <%= l(@overtime.end_at, format: :hours_minutes) %></dd>
+    </div>
+    <div class="flex justify-between gap-4">
+      <dt class="font-medium text-gray-500"><%= t(".duration") %></dt>
+      <dd class="font-semibold text-red-600">
+        <%= number_with_precision(@overtime.duration_hours_decimal, precision: 1, separator: ",", delimiter: ".") %>h
+        (<%= @overtime.duration_formatted_export %>)
+      </dd>
+    </div>
+    <div>
+      <dt class="font-medium text-gray-500"><%= Overtime.human_attribute_name(:description) %></dt>
+      <dd class="mt-1 text-gray-900"><%= @overtime.description %></dd>
+    </div>
+  </dl>
+
+  <div class="mt-6 flex items-center gap-4">
+    <%= link_to t(".edit"), edit_overtime_path(@overtime), class: "rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700" %>
+    <%= link_to t(".back"), overtimes_path, class: "text-sm font-medium text-gray-500 hover:text-gray-700" %>
+  </div>
+</div>

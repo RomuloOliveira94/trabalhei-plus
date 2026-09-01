@@ -6,6 +6,8 @@ class User < ApplicationRecord
 
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }
 
+  has_many :overtimes, dependent: :destroy
+
   # Finds an existing user by the OmniAuth e-mail or creates a new one.
   # OAuth users never use the password form, but Devise requires one,
   # so they get a random secure secret.

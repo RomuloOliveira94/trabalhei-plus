@@ -10,7 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_01_170612) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_01_172112) do
+  create_table "overtimes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description", default: "", null: false
+    t.datetime "discarded_at"
+    t.datetime "end_at", null: false
+    t.datetime "start_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["discarded_at"], name: "index_overtimes_on_discarded_at"
+    t.index ["user_id", "start_at"], name: "index_overtimes_on_user_id_and_start_at"
+    t.index ["user_id"], name: "index_overtimes_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -25,4 +38,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_01_170612) do
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
+
+  add_foreign_key "overtimes", "users"
 end

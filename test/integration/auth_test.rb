@@ -32,7 +32,9 @@ class AuthTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_path
     follow_redirect!
-    assert_select "h1", "Bem-vindo(a), Ana Souza!"
+    assert_redirected_to overtimes_path
+    follow_redirect!
+    assert_select "h1", "Minhas horas extras"
   end
 
   test "does not sign in with invalid credentials" do
@@ -40,7 +42,8 @@ class AuthTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     get root_path
-    assert_redirected_to new_user_session_path
+    assert_response :success
+    assert_select "a", "Criar conta"
   end
 
   test "signs out" do
@@ -49,13 +52,23 @@ class AuthTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_path
     get root_path
-    assert_redirected_to new_user_session_path
+    assert_response :success
+    assert_select "a", "Entrar"
   end
 
-  test "root redirects anonymous visitors to the sign in page" do
+  test "root renders the guest home page" do
     get root_path
 
-    assert_redirected_to new_user_session_path
+    assert_response :success
+    assert_select "a", "Entrar"
+    assert_select "a", "Criar conta"
+  end
+
+  test "root bounces signed-in users to their overtime list" do
+    sign_in users(:one)
+    get root_path
+
+    assert_redirected_to overtimes_path
   end
 
   test "google omniauth callback creates and signs in a new user" do
@@ -73,7 +86,9 @@ class AuthTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_path
     follow_redirect!
-    assert_select "h1", "Bem-vindo(a), Google User!"
+    assert_redirected_to overtimes_path
+    follow_redirect!
+    assert_select "h1", "Minhas horas extras"
   end
 
   test "google omniauth callback signs in an existing user by email" do

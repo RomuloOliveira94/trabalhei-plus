@@ -3,6 +3,21 @@ pt-BR:
     attributes:
       user:
         name: "Nome"
+      overtime:
+        start_at: "Início"
+        end_at: "Fim"
+        description: "Descrição"
+    errors:
+      models:
+        overtime:
+          attributes:
+            end_at:
+              after_start_at: "deve ser depois do início"
+              minimum_duration: "deve ter duração de no mínimo %{count} minutos"
+  time:
+    formats:
+      short_date: "%d/%m/%Y"
+      hours_minutes: "%H:%M"
   layouts:
     application:
       app_name: "Trabalhei a Mais"
@@ -10,5 +25,49 @@ pt-BR:
       sign_out: "Sair"
   home:
     show:
-      welcome: "Bem-vindo(a), %{name}!"
-      placeholder_notice: "Painel de horas extras em breve — o controle de horas chega na próxima fase."
+      headline: "Trabalhei a Mais"
+      tagline: "Controle suas horas extras e comprove o tempo trabalhado com o RH."
+      sign_in: "Entrar"
+      sign_up: "Criar conta"
+  overtimes:
+    index:
+      title: "Minhas horas extras"
+      period: "Período: %{from} a %{to}"
+      total_hours: "Total de horas no período"
+      new_overtime: "Nova hora extra"
+      filter_from: "De"
+      filter_to: "Até"
+      filter_submit: "Filtrar"
+      column_date: "Data"
+      column_start: "Início"
+      column_end: "Fim"
+      column_duration: "Duração"
+      column_description: "Descrição"
+      column_actions: "Ações"
+      empty: "Nenhuma hora extra cadastrada neste período."
+      empty_cta: "Cadastrar a primeira hora extra"
+    overtime_actions:
+      edit: "Editar"
+      delete: "Apagar"
+      confirm_delete: "Apagar esta hora extra?"
+    new:
+      title: "Nova hora extra"
+    edit:
+      title: "Editar hora extra"
+    form:
+      submit: "Salvar"
+      cancel: "Cancelar"
+      error_notice:
+        one: "1 erro impediu o salvamento da hora extra:"
+        other: "%{count} erros impediram o salvamento da hora extra:"
+    show:
+      title: "Detalhe da hora extra"
+      duration: "Duração"
+      edit: "Editar"
+      back: "Voltar"
+    create:
+      created: "Hora extra cadastrada com sucesso."
+    update:
+      updated: "Hora extra atualizada com sucesso."
+    destroy:
+      destroyed: "Hora extra apagada com sucesso."

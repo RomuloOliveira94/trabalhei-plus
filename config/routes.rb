@@ -3,8 +3,11 @@ Rails.application.routes.draw do
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks" }
 
-  # Placeholder dashboard until the Overtime CRUD lands (Phase 2).
+  # Guests land on the marketing/home page; signed-in users are bounced
+  # to their overtime list by HomeController (SPEC §3 "Dashboard / Index").
   root "home#show"
+
+  resources :overtimes
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify the app is the live.
