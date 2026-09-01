@@ -43,10 +43,9 @@ class OvertimeFlowTest < ApplicationSystemTestCase
     assert_text "Hora extra atualizada com sucesso."
     assert_text "Fechamento do relatório mensal (revisado)"
 
-    # Delete with confirmation
-    accept_confirm do
-      find("button[aria-label='Apagar']", match: :first).click
-    end
+    # Delete with confirmation modal
+    find("button[aria-label='Apagar']", match: :first).click
+    within("dialog") { click_button "Excluir" }
 
     assert_text "Hora extra apagada com sucesso."
     assert_no_text "Fechamento do relatório mensal (revisado)"
