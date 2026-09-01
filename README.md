@@ -1,4 +1,4 @@
-# Trabalhei a Mais
+# Trabalhei +
 
 Rastreador de horas extras para usuário leigo. Cadastre cada bloco de hora
 extra (data, início, fim, descrição), acompanhe o total acumulado do mês e
@@ -17,6 +17,7 @@ Sem Node, sem Redis — Solid Queue/Cache/Cable.
 - **Exportação** — PDF (Prawn) e Excel (Caxlsx) com período selecionável.
 - **Turbo Streams** — criar/editar/apagar atualizam a lista sem reload.
 - **Mobile** — FAB para "Nova hora extra", filtros em sheet recolhível.
+- **PWA** — instalável (manifest + service worker), offline page, ícones gerados.
 - **pt-BR** — toda a interface em português (i18n), páginas de erro 404/500.
 
 ## Como rodar localmente

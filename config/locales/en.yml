@@ -32,21 +32,48 @@ en:
       hours_minutes: "%H:%M"
   layouts:
     application:
-      app_name: "Trabalhei a Mais"
+      app_name: "Trabalhei +"
+      meta_description: "Track your overtime hours and generate PDF and Excel reports to send to HR."
+      meta_keywords: "overtime, tracking, report, HR, worked extra"
       skip_to_content: "Skip to content"
       sign_in: "Sign in"
       sign_out: "Sign out"
+  devise:
+    sessions:
+      new:
+        sign_in: "Sign in"
+        tagline: "Track your overtime and hand the HR department proof of your extra hours."
+        remember_me: "Remember me"
+        forgot_password: "Forgot your password?"
+        or: "or"
+        google_sign_in: "Sign in with Google"
+        no_account: "Don't have an account?"
+        sign_up: "Sign up"
+    registrations:
+      new:
+        sign_up: "Sign up"
+        tagline: "Create your account to start tracking your overtime."
+        have_account: "Already have an account?"
+        sign_in: "Sign in"
+      edit:
+        tagline: "Manage your account details."
+    passwords:
+      new:
+        tagline: "Enter your email and we'll send you instructions to reset your password."
+        back_to_sign_in: "Back to sign in"
+      edit:
+        tagline: "Set a new password for your account."
+    confirmations:
+      new:
+        tagline: "Resend the confirmation instructions to your email."
+    unlocks:
+      new:
+        tagline: "Resend the unlock instructions to your email."
   components:
     confirm_modal:
       title: "Are you sure?"
       confirm: "Delete"
       cancel: "Cancel"
-  home:
-    show:
-      headline: "Trabalhei a Mais"
-      tagline: "Track your overtime and hand the HR department proof of your extra hours."
-      sign_in: "Sign in"
-      sign_up: "Sign up"
   overtimes:
     index:
       title: "My overtime"
@@ -61,11 +88,11 @@ en:
       column_actions: "Actions"
       export_pdf: "Export PDF"
       export_xlsx: "Export Excel"
-    filter_form:
+    date_filter_form:
       filter_from: "From"
       filter_to: "To"
       filter_submit: "Filter"
-    summary:
+    total_summary:
       total_hours: "Total hours in the period"
     empty_state:
       empty: "No overtime registered in this period."
@@ -87,7 +114,7 @@ en:
       column_end: "End"
       column_duration: "Duration"
       column_description: "Description"
-    overtime_actions:
+    action_buttons:
       edit: "Edit"
       delete: "Delete"
       confirm_delete: "Delete this overtime?"
@@ -99,7 +126,7 @@ en:
       next: "Next"
       last: "Last"
       gap: "…"
-    sentinel:
+    pagination_sentinel:
       loading: "Loading more overtime…"
     new:
       title: "New overtime"

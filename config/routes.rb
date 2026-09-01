@@ -3,9 +3,18 @@ Rails.application.routes.draw do
 
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks" }
 
-  # Guests land on the marketing/home page; signed-in users are bounced
-  # to their overtime list by HomeController (SPEC §3 "Dashboard / Index").
-  root "home#show"
+  # Root: guests land on the sign-in page rendered at "/" (clean URL); signed-in
+  # users are sent straight to their overtime list. Devise's after_sign_in_path
+  # uses the authenticated root (user_root_path), so login lands on /overtimes
+  # (SPEC §3). The unauthenticated root keeps the plain root_path helper and
+  # must live inside devise_scope so Devise resolves the user mapping.
+  authenticated :user do
+    root to: "overtimes#index", as: :authenticated_root
+  end
+
+  devise_scope :user do
+    root to: "devise/sessions#new"
+  end
 
   # Export endpoints must be declared before the `resources` block so
   # `overtimes/export_pdf` is not swallowed by the `overtimes/:id` show route.
@@ -24,8 +33,4 @@ Rails.application.routes.draw do
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify the app is the live.
   get "up" => "rails/health#show", as: :rails_health_check
-
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 end

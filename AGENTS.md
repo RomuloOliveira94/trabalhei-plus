@@ -2,15 +2,16 @@
 
 ## Status
 
-Rails 8.1 app, 5 phases shipped on `main` (linear feature stack):
+Rails 8.1 app, 6 phases shipped on `main` (linear feature stack):
 
 1. **Setup + auth** — Devise (email/senha) + OmniAuth Google (stub), pt-BR locale base, base layout (red/white).
 2. **Overtime CRUD** — model with Discard soft delete, responsive index (desktop table / mobile cards), Ransack filters, header summary.
 3. **Pagination** — Pagy: desktop buttons + mobile infinite scroll (Turbo Stream sentinel).
 4. **Exports** — PDF (Prawn) + Excel (Caxlsx) with period filter; "Usuário" terminology, no email in reports.
 5. **Polish + i18n** — full pt-BR i18n, confirm-delete modal (Stimulus `<dialog>`), Turbo Stream CRUD (append/replace/remove), mobile FAB + filter sheet, pt-BR 404/500 pages, a11y (skip link, labels, focus trap).
+6. **UI/UX polish + login redesign + PWA + app rename + file naming** — branded sign-in card (login IS the landing at `/`), Google button with official G logo, root route via Devise `authenticated`/`root` (guests → sign-in, signed-in → overtimes), consistent Tailwind styling (red focus rings, hover/transition states, 44px tap targets), mobile-first audit at 375px, pt-BR 404/500 in dev (`consider_all_requests_local = false`), PWA (static `public/manifest.webmanifest` + `public/sw.js` + `public/offline.html`, generated icons), SEO meta tags, product renamed **"Trabalhei +"** (UI text only), new-HE form pre-selects today, and a file-naming sweep (see Conventions).
 
-App module: `Trabalheiamais` (`config/application.rb`).
+App module: `Trabalheiamais` (`config/application.rb`). **UI name is "Trabalhei +"** — the Ruby namespace stays `Trabalheiamais` (not renamed, too invasive for v1).
 
 ## Stack
 
@@ -31,7 +32,7 @@ No node, no esbuild, no Shakapacker. **No Sidekiq/Redis** — Solid Queue (runs 
 
 ## Gotchas
 
-- **No root route** — `/` raises routing error until one is defined in `config/routes.rb` (currently commented out).
+- **Root route** — `/` renders the sign-in page for guests (login IS the landing) and the overtime list for signed-in users, via Devise `authenticated :user do root ... end` + a `devise_scope :user` root (see `config/routes.rb`). The unauthenticated root must live inside `devise_scope` so Devise resolves the user mapping.
 - **Prod Solid Queue runs inside Puma** (`SOLID_QUEUE_IN_PUMA=true` in `config/deploy.yml`). Do not add a separate worker process.
 - Tests use **fixtures** (minitest), no FactoryBot. Parallel workers, `fixtures :all` in `test/test_helper.rb`.
 - `bin/setup` auto-launches dev server unless `--skip-server` is passed.
@@ -56,9 +57,20 @@ Minitest only (no RSpec). Standard Rails layout under `test/` (all dirs empty `.
 
 Rails 8 omakase defaults apply unless overridden in `config/`. Follow Basecamp conventions (Fat models, thin controllers, concerns for shared behavior, Hotwire-first UX).
 
+### File naming (Phase 6 sweep)
+
+Partial and locale-key names must be self-explanatory — no abbreviations or generic words. Renamed in Phase 6:
+
+| Old | New |
+|---|---|
+| `_overtime_actions.html.erb` / `overtimes.overtime_actions.*` | `_action_buttons.html.erb` / `overtimes.action_buttons.*` |
+| `_sentinel.html.erb` / `overtimes.sentinel.*` | `_pagination_sentinel.html.erb` / `overtimes.pagination_sentinel.*` |
+| `_summary.html.erb` / `overtimes.summary.*` | `_total_summary.html.erb` / `overtimes.total_summary.*` |
+| `_filter_form.html.erb` / `overtimes.filter_form.*` | `_date_filter_form.html.erb` / `overtimes.date_filter_form.*` |
+
+Stimulus controllers (`confirm_modal`, `dialog_modal`, `infinite_scroll`) already describe their action — keep. Auth pages share `devise/shared/_auth_card.html.erb`; relative i18n keys inside `render "partial" do ... end` blocks resolve against the partial path, so use absolute keys there.
+
 ## Open questions (ask before building)
 
-- App purpose + primary locale (pt-BR likely from repo name).
-- Auth strategy (Devise? Rails 8 `bin/rails generate authentication`? Auth0?).
 - Git host + branch/PR/release conventions — none configured yet.
 - Deployment target (Kamal placeholder needs real server + registry).

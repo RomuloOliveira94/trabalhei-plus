@@ -15,7 +15,9 @@ class AuthTest < ActionDispatch::IntegrationTest
     assert_select "label", "E-mail"
     assert_select "label", "Senha"
     assert_select "label", "Lembre-se de mim"
-    assert_select "h2", "Login"
+    assert_select "input[type=submit][value=Entrar]"
+    assert_select "a", "Cadastre-se"
+    assert_select "a", "Esqueceu a senha?"
   end
 
   test "sign up page renders in pt-BR with a name field" do
@@ -30,9 +32,9 @@ class AuthTest < ActionDispatch::IntegrationTest
   test "signs in with valid credentials" do
     post user_session_path, params: { user: { email: users(:one).email, password: "password123" } }
 
+    # Devise redirects to the authenticated root (user_root_path), which is
+    # the overtime index rendered at "/".
     assert_redirected_to root_path
-    follow_redirect!
-    assert_redirected_to overtimes_path
     follow_redirect!
     assert_select "h1", "Minhas horas extras"
   end
@@ -43,7 +45,7 @@ class AuthTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     get root_path
     assert_response :success
-    assert_select "a", "Criar conta"
+    assert_select "a", "Cadastre-se"
   end
 
   test "signs out" do
@@ -53,22 +55,24 @@ class AuthTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
     get root_path
     assert_response :success
-    assert_select "a", "Entrar"
+    assert_select "input[type=submit][value=Entrar]"
   end
 
-  test "root renders the guest home page" do
+  test "root renders the sign-in page for guests" do
     get root_path
 
     assert_response :success
-    assert_select "a", "Entrar"
-    assert_select "a", "Criar conta"
+    assert_select "input[type=submit][value=Entrar]"
+    assert_select "a", "Cadastre-se"
+    assert_select "button", "Entrar com Google"
   end
 
-  test "root bounces signed-in users to their overtime list" do
+  test "root shows signed-in users their overtime list" do
     sign_in users(:one)
     get root_path
 
-    assert_redirected_to overtimes_path
+    assert_response :success
+    assert_select "h1", "Minhas horas extras"
   end
 
   test "google omniauth callback creates and signs in a new user" do
@@ -85,8 +89,6 @@ class AuthTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to root_path
-    follow_redirect!
-    assert_redirected_to overtimes_path
     follow_redirect!
     assert_select "h1", "Minhas horas extras"
   end

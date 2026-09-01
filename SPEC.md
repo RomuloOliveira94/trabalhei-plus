@@ -1,4 +1,9 @@
-# SPEC — Trabalhei a Mais
+# SPEC — Trabalhei +
+
+> **Nota (Phase 6):** o nome do produto mudou de "Trabalhei a Mais" para
+> "Trabalhei +". Este documento foi atualizado; o nome antigo está
+> superseded e só permanece no histórico de commits. O módulo Ruby
+> `Trabalheiamais` (namespace interno) não foi renomeado.
 
 > Rastreador de horas extras para usuário leigo. Rails 8.1 · SQLite · Hotwire.
 
@@ -234,7 +239,7 @@ Tudo já no `Gemfile` da omakase, exceto gems novas marcadas com **\[+\]**.
 ### Layout responsivo (mobile-first)
 
 **Mobile (< md):**
-- Header fixo: logo "Trabalhei a Mais" + avatar/menu do usuário.
+- Header fixo: logo "Trabalhei +" + avatar/menu do usuário.
 - **Bottom navbar** com 3 destinos: Início, Nova (central, destacado), Exportar.
 - **FAB** ("+") flutuante no canto inferior direito para "Nova HE" (atalho extra).
 - Lista em **cards** verticais, um por HE, com ações inline (ícones).

@@ -24,10 +24,43 @@ pt-BR:
       short_datetime: "%d/%m/%Y %H:%M"
   layouts:
     application:
-      app_name: "Trabalhei a Mais"
+      app_name: "Trabalhei +"
+      meta_description: "Cadastre e acompanhe suas horas extras, gere relatórios em PDF e Excel para enviar ao RH."
+      meta_keywords: "horas extras, controle, relatório, RH, trabalhei mais"
       skip_to_content: "Pular para o conteúdo"
       sign_in: "Entrar"
       sign_out: "Sair"
+  devise:
+    sessions:
+      new:
+        sign_in: "Entrar"
+        tagline: "Controle suas horas extras e comprove o tempo trabalhado com o RH."
+        remember_me: "Lembre-se de mim"
+        forgot_password: "Esqueceu a senha?"
+        or: "ou"
+        google_sign_in: "Entrar com Google"
+        no_account: "Não tem conta?"
+        sign_up: "Cadastre-se"
+    registrations:
+      new:
+        sign_up: "Cadastrar"
+        tagline: "Crie sua conta para começar a registrar suas horas extras."
+        have_account: "Já tem conta?"
+        sign_in: "Entrar"
+      edit:
+        tagline: "Gerencie os dados da sua conta."
+    passwords:
+      new:
+        tagline: "Informe seu e-mail e enviaremos as instruções para redefinir sua senha."
+        back_to_sign_in: "Voltar para o login"
+      edit:
+        tagline: "Defina uma nova senha para sua conta."
+    confirmations:
+      new:
+        tagline: "Reenvie as instruções de confirmação para seu e-mail."
+    unlocks:
+      new:
+        tagline: "Reenvie as instruções de desbloqueio para seu e-mail."
   components:
     confirm_modal:
       title: "Tem certeza?"
@@ -35,12 +68,6 @@ pt-BR:
       cancel: "Cancelar"
     dialog_modal:
       close: "Fechar"
-  home:
-    show:
-      headline: "Trabalhei a Mais"
-      tagline: "Controle suas horas extras e comprove o tempo trabalhado com o RH."
-      sign_in: "Entrar"
-      sign_up: "Criar conta"
   overtimes:
     index:
       title: "Minhas horas extras"
@@ -55,11 +82,11 @@ pt-BR:
       column_actions: "Ações"
       export_pdf: "Exportar PDF"
       export_xlsx: "Exportar Excel"
-    filter_form:
+    date_filter_form:
       filter_from: "De"
       filter_to: "Até"
       filter_submit: "Filtrar"
-    summary:
+    total_summary:
       total_hours: "Total de horas no período"
     empty_state:
       empty: "Nenhuma hora extra cadastrada neste período."
@@ -81,7 +108,7 @@ pt-BR:
       column_end: "Fim"
       column_duration: "Duração"
       column_description: "Descrição"
-    overtime_actions:
+    action_buttons:
       edit: "Editar"
       delete: "Apagar"
       confirm_delete: "Apagar esta hora extra?"
@@ -93,7 +120,7 @@ pt-BR:
       next: "Próxima"
       last: "Última"
       gap: "…"
-    sentinel:
+    pagination_sentinel:
       loading: "Carregando mais horas extras…"
     new:
       title: "Nova hora extra"

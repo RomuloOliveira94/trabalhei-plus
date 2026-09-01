@@ -3,20 +3,21 @@ require "application_system_test_case"
 # Smoke test: critical pages render the expected pt-BR strings (SPEC §10 Q2 —
 # pt-BR is the only UI locale; en.yml stays as the fallback).
 class I18nTest < ApplicationSystemTestCase
-  test "guest home page renders pt-BR strings" do
+  test "guest root renders the pt-BR sign-in page" do
     visit root_path
 
-    assert_text "Controle suas horas extras"
-    assert_text "Entrar"
-    assert_text "Criar conta"
+    assert_text "Trabalhei +"
+    assert_text "Entrar com Google"
+    assert_text "Cadastre-se"
   end
 
   test "sign in page renders pt-BR strings" do
     visit new_user_session_path
 
-    assert_text "Login"
+    assert_text "Entrar"
     assert_text "E-mail"
     assert_text "Senha"
+    assert_text "Esqueceu a senha?"
   end
 
   test "overtime index renders pt-BR strings" do
