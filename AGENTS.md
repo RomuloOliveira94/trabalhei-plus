@@ -2,7 +2,13 @@
 
 ## Status
 
-Greenfield Rails 8.1 omakase scaffold. Zero domain code. No git commits, no remote — first commit + remote setup pending. All 26 generated paths currently untracked on `main`.
+Rails 8.1 app, 5 phases shipped on `main` (linear feature stack):
+
+1. **Setup + auth** — Devise (email/senha) + OmniAuth Google (stub), pt-BR locale base, base layout (red/white).
+2. **Overtime CRUD** — model with Discard soft delete, responsive index (desktop table / mobile cards), Ransack filters, header summary.
+3. **Pagination** — Pagy: desktop buttons + mobile infinite scroll (Turbo Stream sentinel).
+4. **Exports** — PDF (Prawn) + Excel (Caxlsx) with period filter; "Usuário" terminology, no email in reports.
+5. **Polish + i18n** — full pt-BR i18n, confirm-delete modal (Stimulus `<dialog>`), Turbo Stream CRUD (append/replace/remove), mobile FAB + filter sheet, pt-BR 404/500 pages, a11y (skip link, labels, focus trap).
 
 App module: `Trabalheiamais` (`config/application.rb`).
 
