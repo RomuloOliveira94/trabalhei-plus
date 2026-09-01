@@ -30,6 +30,10 @@ module Trabalheiamais
     config.i18n.available_locales = [ :"pt-BR", :en ]
     config.i18n.fallbacks = true
 
+    # Route exceptions through the app so the pt-BR error pages render
+    # (ErrorsController + config/routes.rb /404 /422 /500).
+    config.exceptions_app = self.routes
+
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end

@@ -1,0 +1,5 @@
+<% flash.each do |type, message| %>
+  <div class="<%= type.to_s == "notice" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800" %> border-b px-5 py-3 text-sm">
+    <div class="container mx-auto"><%= message %></div>
+  </div>
+<% end %>

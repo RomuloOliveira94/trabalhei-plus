@@ -33,8 +33,14 @@ en:
   layouts:
     application:
       app_name: "Trabalhei a Mais"
+      skip_to_content: "Skip to content"
       sign_in: "Sign in"
       sign_out: "Sign out"
+  components:
+    confirm_modal:
+      title: "Are you sure?"
+      confirm: "Delete"
+      cancel: "Cancel"
   home:
     show:
       headline: "Trabalhei a Mais"
@@ -45,23 +51,56 @@ en:
     index:
       title: "My overtime"
       period: "Period: %{from} to %{to}"
-      total_hours: "Total hours in the period"
       new_overtime: "New overtime"
-      filter_from: "From"
-      filter_to: "To"
-      filter_submit: "Filter"
+      filter_toggle: "Filters"
       column_date: "Date"
       column_start: "Start"
       column_end: "End"
       column_duration: "Duration"
       column_description: "Description"
       column_actions: "Actions"
+      export_pdf: "Export PDF"
+      export_xlsx: "Export Excel"
+    filter_form:
+      filter_from: "From"
+      filter_to: "To"
+      filter_submit: "Filter"
+    summary:
+      total_hours: "Total hours in the period"
+    empty_state:
       empty: "No overtime registered in this period."
+      empty_help: "Register your first overtime to start tracking your extra hours."
       empty_cta: "Register your first overtime"
+    export:
+      pdf_title: "Overtime Report"
+      usuario: "User: %{name}"
+      period: "Period: %{period}"
+      generated_at: "Generated at: %{datetime}"
+      total: "Total hours in the period"
+      usuario_label: "User"
+      period_label: "Period"
+      total_label: "Total Hours"
+      sheet_main: "Overtime"
+      sheet_summary: "Summary"
+      column_date: "Date"
+      column_start: "Start"
+      column_end: "End"
+      column_duration: "Duration"
+      column_description: "Description"
     overtime_actions:
       edit: "Edit"
       delete: "Delete"
       confirm_delete: "Delete this overtime?"
+      confirm_delete_title: "Delete overtime"
+    pagination:
+      aria_label: "Pagination"
+      first: "First"
+      prev: "Previous"
+      next: "Next"
+      last: "Last"
+      gap: "…"
+    sentinel:
+      loading: "Loading more overtime…"
     new:
       title: "New overtime"
     edit:
@@ -83,3 +122,16 @@ en:
       updated: "Overtime updated successfully."
     destroy:
       destroyed: "Overtime deleted successfully."
+  errors:
+    not_found:
+      title: "Page not found"
+      body: "The page you are looking for does not exist or has been moved."
+      back: "Back to my overtime"
+    unprocessable_entity:
+      title: "Could not process the request"
+      body: "Something in the request could not be processed. Go back and try again."
+      back: "Back to my overtime"
+    internal_server_error:
+      title: "Something went wrong"
+      body: "An unexpected error occurred. Please try again in a few moments."
+      back: "Back to home"

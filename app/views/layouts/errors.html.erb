@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <title><%= content_for(:title) || t("layouts.application.app_name") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+  </head>
+
+  <body class="min-h-screen bg-white text-gray-900">
+    <header class="border-b border-gray-100">
+      <div class="container mx-auto flex h-16 items-center px-5">
+        <%= link_to t("layouts.application.app_name"), root_path, class: "text-xl font-bold text-red-600" %>
+      </div>
+    </header>
+
+    <main class="container mx-auto mt-8 px-5 flex">
+      <%= yield %>
+    </main>
+  </body>
+</html>

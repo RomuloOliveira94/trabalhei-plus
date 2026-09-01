@@ -25,8 +25,14 @@ pt-BR:
   layouts:
     application:
       app_name: "Trabalhei a Mais"
+      skip_to_content: "Pular para o conteúdo"
       sign_in: "Entrar"
       sign_out: "Sair"
+  components:
+    confirm_modal:
+      title: "Tem certeza?"
+      confirm: "Excluir"
+      cancel: "Cancelar"
   home:
     show:
       headline: "Trabalhei a Mais"
@@ -37,21 +43,26 @@ pt-BR:
     index:
       title: "Minhas horas extras"
       period: "Período: %{from} a %{to}"
-      total_hours: "Total de horas no período"
       new_overtime: "Nova hora extra"
-      filter_from: "De"
-      filter_to: "Até"
-      filter_submit: "Filtrar"
+      filter_toggle: "Filtros"
       column_date: "Data"
       column_start: "Início"
       column_end: "Fim"
       column_duration: "Duração"
       column_description: "Descrição"
       column_actions: "Ações"
-      empty: "Nenhuma hora extra cadastrada neste período."
-      empty_cta: "Cadastrar a primeira hora extra"
       export_pdf: "Exportar PDF"
       export_xlsx: "Exportar Excel"
+    filter_form:
+      filter_from: "De"
+      filter_to: "Até"
+      filter_submit: "Filtrar"
+    summary:
+      total_hours: "Total de horas no período"
+    empty_state:
+      empty: "Nenhuma hora extra cadastrada neste período."
+      empty_help: "Registre sua primeira hora extra para começar a acompanhar o tempo trabalhado."
+      empty_cta: "Cadastrar a primeira hora extra"
     export:
       pdf_title: "Relatório de Horas Extras"
       usuario: "Usuário: %{name}"
@@ -72,6 +83,7 @@ pt-BR:
       edit: "Editar"
       delete: "Apagar"
       confirm_delete: "Apagar esta hora extra?"
+      confirm_delete_title: "Excluir hora extra"
     pagination:
       aria_label: "Paginação"
       first: "Primeira"
@@ -102,3 +114,16 @@ pt-BR:
       updated: "Hora extra atualizada com sucesso."
     destroy:
       destroyed: "Hora extra apagada com sucesso."
+  errors:
+    not_found:
+      title: "Página não encontrada"
+      body: "A página que você procura não existe ou foi movida."
+      back: "Voltar para minhas horas extras"
+    unprocessable_entity:
+      title: "Não foi possível processar a solicitação"
+      body: "Algo na solicitação não pôde ser processado. Volte e tente novamente."
+      back: "Voltar para minhas horas extras"
+    internal_server_error:
+      title: "Algo deu errado"
+      body: "Ocorreu um erro inesperado. Tente novamente em alguns instantes."
+      back: "Voltar para o início"

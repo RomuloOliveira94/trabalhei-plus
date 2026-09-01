@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
   <head>
-    <title><%= content_for(:title) || "Trabalheiamais" %></title>
+    <title><%= content_for(:title) || t("layouts.application.app_name") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Trabalheiamais">
+    <meta name="application-name" content="<%= t("layouts.application.app_name") %>">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -24,6 +24,11 @@
   </head>
 
   <body class="min-h-screen bg-white text-gray-900">
+    <%# Accessibility: keyboard users can jump straight to the content. %>
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-red-600 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white">
+      <%= t("layouts.application.skip_to_content") %>
+    </a>
+
     <header class="border-b border-gray-100">
       <div class="container mx-auto flex h-16 items-center justify-between px-5">
         <%= link_to t(".app_name"), root_path, class: "text-xl font-bold text-red-600" %>
@@ -51,13 +56,12 @@
       </div>
     </header>
 
-    <% flash.each do |type, message| %>
-      <div class="<%= type.to_s == "notice" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800" %> border-b px-5 py-3 text-sm">
-        <div class="container mx-auto"><%= message %></div>
-      </div>
-    <% end %>
+    <%# id="flash" is the Turbo Stream target for create/update/destroy notices. %>
+    <div id="flash">
+      <%= render "shared/flash" %>
+    </div>
 
-    <main class="container mx-auto mt-8 px-5 flex">
+    <main id="main-content" class="container mx-auto mt-8 px-5 flex">
       <%= yield %>
     </main>
   </body>
