@@ -23,6 +23,8 @@
 <%= turbo_stream.replace "overtime_form" do %>
   <%= turbo_frame_tag "overtime_form" %>
 <% end %>
+<%# Close the CRUD modal (dialog-modal) after the row was replaced/removed. %>
+<%= turbo_stream_action_tag "close_modal" %>
 <% if flash.any? %>
   <%= turbo_stream.update "flash" do %>
     <%= render "shared/flash" %>

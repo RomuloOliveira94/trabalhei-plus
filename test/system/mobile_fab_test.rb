@@ -12,14 +12,14 @@ class MobileFabTest < ApplicationSystemTestCase
     assert_selector "a[aria-label='Nova hora extra']", visible: false
   end
 
-  test "FAB opens the new overtime form in place" do
+  test "FAB opens the new overtime form in the CRUD modal" do
     sign_in users(:one)
     page.current_window.resize_to(375, 812)
     visit overtimes_path
 
     find("a[aria-label='Nova hora extra']").click
 
-    assert_selector "turbo-frame#overtime_form form"
+    wait_for_crud_modal_form
     assert_match %r{/overtimes\z}, page.current_url
   end
 

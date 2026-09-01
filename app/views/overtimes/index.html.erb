@@ -20,9 +20,11 @@
         <%= hidden_field_tag :to, @filter_end_date %>
         <%= submit_tag t(".export_xlsx"), class: "inline-flex cursor-pointer items-center justify-center rounded-lg border border-red-600 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50" %>
       <% end %>
-      <%# Desktop keeps the in-header button; mobile uses the FAB instead. %>
-      <%= link_to t(".new_overtime"), new_overtime_path(from: @filter_start_date, to: @filter_end_date),
-          data: { turbo_frame: "overtime_form" },
+      <%# Desktop keeps the in-header button; mobile uses the FAB instead.
+          Both open the CRUD modal (dialog-modal) instead of navigating. %>
+      <% new_url = new_overtime_path(from: @filter_start_date, to: @filter_end_date) %>
+      <%= link_to t(".new_overtime"), new_url,
+          data: { dialog_modal_url_value: new_url, dialog_modal_title_value: t("overtimes.new.title") },
           class: "hidden md:inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700" %>
     </div>
   </div>
@@ -49,10 +51,9 @@
     <%= render "filter_form" %>
   </div>
 
-  <%# Inline form frame: "Nova hora extra" and "Editar" load the form here
-      without leaving the page, so create/update can append/replace the list
-      row via Turbo Streams (SPEC AC-1/AC-2). Empty by default. %>
-  <%= turbo_frame_tag "overtime_form" %>
+  <%# The CRUD form lives in the dialog-modal (shared/_dialog_modal), loaded
+      on demand via a Turbo Frame; create/update append/replace the list row
+      via Turbo Streams (SPEC AC-1/AC-2). No inline frame here anymore. %>
 
   <% if @overtimes.any? %>
     <%= render "list" %>
@@ -60,9 +61,10 @@
     <%= render "empty_state" %>
   <% end %>
 
-  <%# Mobile FAB (SPEC §8): bottom-right, red, circular, < md only. %>
-  <%= link_to new_overtime_path(from: @filter_start_date, to: @filter_end_date),
-      data: { turbo_frame: "overtime_form" },
+  <%# Mobile FAB (SPEC §8): bottom-right, red, circular, < md only. Opens the
+      CRUD modal like the desktop button. %>
+  <%= link_to new_url,
+      data: { dialog_modal_url_value: new_url, dialog_modal_title_value: t("overtimes.new.title") },
       class: "fixed bottom-6 right-5 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-red-600 text-white shadow-lg hover:bg-red-700 md:hidden",
       aria: { label: t(".new_overtime") } do %>
     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">

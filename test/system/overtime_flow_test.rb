@@ -23,6 +23,7 @@ class OvertimeFlowTest < ApplicationSystemTestCase
 
     # Create
     click_link "Nova hora extra"
+    wait_for_crud_modal_form
     day = Date.current.beginning_of_month
     # datetime-local inputs must be filled with Time objects (Capybara sets
     # them via JS); raw ISO strings get mangled by Chrome's segmented widget.
@@ -37,6 +38,7 @@ class OvertimeFlowTest < ApplicationSystemTestCase
 
     # Update the first row (fixture, chronological order)
     find("a[aria-label='Editar']", match: :first).click
+    wait_for_crud_modal_form
     fill_in "Descrição", with: "Fechamento do relatório mensal (revisado)"
     click_button "Salvar"
 

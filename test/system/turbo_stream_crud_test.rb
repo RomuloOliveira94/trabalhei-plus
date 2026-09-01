@@ -11,7 +11,7 @@ class TurboStreamCrudTest < ApplicationSystemTestCase
     page.evaluate_script("window.__no_reload = true")
 
     click_link "Nova hora extra"
-    assert_selector "turbo-frame#overtime_form form"
+    wait_for_crud_modal_form
 
     day = Date.current.beginning_of_month
     fill_in "Início", with: Time.zone.local(day.year, day.month, day.day, 20, 0, 0)
@@ -26,8 +26,8 @@ class TurboStreamCrudTest < ApplicationSystemTestCase
     # the desktop viewport, but present in the DOM).
     assert_selector "table tbody tr", count: 2
     assert_selector "#overtimes-mobile-list #overtime_card_#{Overtime.last.id}", visible: :hidden
-    # The inline form frame resets (form closed).
-    assert_no_selector "turbo-frame#overtime_form form"
+    # The CRUD modal closes after the stream applies.
+    assert_no_selector "dialog[open]"
   end
 
   test "update replaces the row in place without a full page reload" do
@@ -36,7 +36,7 @@ class TurboStreamCrudTest < ApplicationSystemTestCase
     page.evaluate_script("window.__no_reload = true")
 
     find("a[aria-label='Editar']", match: :first).click
-    assert_selector "turbo-frame#overtime_form form"
+    wait_for_crud_modal_form
 
     fill_in "Descrição", with: "Descrição atualizada via stream"
     click_button "Salvar"
@@ -60,6 +60,7 @@ class TurboStreamCrudTest < ApplicationSystemTestCase
     page.evaluate_script("window.__no_reload = true")
 
     click_link "Nova hora extra"
+    wait_for_crud_modal_form
     fill_in "Início", with: Time.zone.local(day.year, day.month, day.day, 20, 0, 0)
     fill_in "Fim", with: Time.zone.local(day.year, day.month, day.day, 21, 0, 0)
     fill_in "Descrição", with: "Primeira hora extra do dia"

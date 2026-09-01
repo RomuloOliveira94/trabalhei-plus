@@ -31,7 +31,10 @@
     </div>
     <div class="flex items-center gap-4">
       <%= f.submit t(".submit"), class: "rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700" %>
-      <%= link_to t(".cancel"), overtimes_path, class: "text-sm font-medium text-gray-500 hover:text-gray-700" %>
+      <%# Inside the CRUD modal the dialog-modal controller intercepts this
+          link (data-dialog-modal-close) and just closes the dialog; on the
+          standalone page it navigates back to the list as before. %>
+      <%= link_to t(".cancel"), overtimes_path, data: { dialog_modal_close: true }, class: "text-sm font-medium text-gray-500 hover:text-gray-700" %>
     </div>
   </div>
 <% end %>

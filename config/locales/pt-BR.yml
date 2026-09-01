@@ -33,6 +33,8 @@ pt-BR:
       title: "Tem certeza?"
       confirm: "Excluir"
       cancel: "Cancelar"
+    dialog_modal:
+      close: "Fechar"
   home:
     show:
       headline: "Trabalhei a Mais"
