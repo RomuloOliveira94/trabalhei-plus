@@ -1,0 +1,14 @@
+pt-BR:
+  activerecord:
+    attributes:
+      user:
+        name: "Nome"
+  layouts:
+    application:
+      app_name: "Trabalhei a Mais"
+      sign_in: "Entrar"
+      sign_out: "Sair"
+  home:
+    show:
+      welcome: "Bem-vindo(a), %{name}!"
+      placeholder_notice: "Painel de horas extras em breve — o controle de horas chega na próxima fase."

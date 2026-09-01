@@ -21,7 +21,15 @@ module Trabalheiamais
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    config.time_zone = "America/Sao_Paulo"
+    config.active_record.default_timezone = :utc
+
+    # The default locale is pt-BR (see SPEC.md §10 Q2). English kept available
+    # as fallback so Rails/dev-facing messages still resolve.
+    config.i18n.default_locale = :"pt-BR"
+    config.i18n.available_locales = [ :"pt-BR", :en ]
+    config.i18n.fallbacks = true
+
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end

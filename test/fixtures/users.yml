@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+# Devise users — password for both is "password123" (encrypted at load time
+# via the model so the app's pepper/stretches are used).
+one:
+  name: "Ana Souza"
+  email: "ana@example.com"
+  encrypted_password: <%= User.new(password: "password123").encrypted_password %>
+
+two:
+  name: "Bruno Lima"
+  email: "bruno@example.com"
+  encrypted_password: <%= User.new(password: "password123").encrypted_password %>
