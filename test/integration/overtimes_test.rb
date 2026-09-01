@@ -194,4 +194,39 @@ class OvertimesTest < ActionDispatch::IntegrationTest
     # Fixture "previous_month" is 2h long.
     assert_match "2,0h", response.body
   end
+
+  test "summary is computed in SQL: correct total with 1000 records, no row-by-row loading" do
+    sign_in users(:one)
+    month_start = Date.current.beginning_of_month.in_time_zone.beginning_of_day
+
+    # 1000 kept records of exactly 30 minutes within the current month. Built
+    # with insert_all (no callbacks) so the test stays fast — the summary only
+    # reads start_at/end_at.
+    Overtime.insert_all(
+      Array.new(1000) do |i|
+        start_at = month_start + (i % 28).days + (i % 120).minutes
+        {
+          user_id: users(:one).id,
+          start_at: start_at,
+          end_at: start_at + 30.minutes,
+          description: "Registro em massa #{i}",
+          created_at: Time.current,
+          updated_at: Time.current
+        }
+      end
+    )
+
+    queries = []
+    subscriber = ->(_name, _started, _finished, _id, payload) { queries << payload[:sql] unless payload[:cached] }
+    ActiveSupport::Notifications.subscribed(subscriber, "sql.active_record") do
+      get overtimes_path
+    end
+
+    assert_response :success
+    # 1000 × 30 min = 500h + the 3.5h "one" fixture = 503.5h.
+    assert_match "503,5h", response.body
+    # The summary must be a single SQL aggregate, not a row-by-row load.
+    assert queries.any? { |sql| sql.match?(/SELECT SUM/i) }, "expected a SQL SUM aggregate for the summary"
+    assert_operator queries.length, :<=, 20, "expected a bounded number of queries (no N+1)"
+  end
 end

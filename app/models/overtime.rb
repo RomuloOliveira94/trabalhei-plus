@@ -25,6 +25,13 @@ class Overtime < ApplicationRecord
 
   MINIMUM_DURATION_MINUTES = 5
 
+  # Total duration (whole minutes) of the relation, computed in SQL via
+  # SQLite's julianday arithmetic. The index summary and the export totals
+  # use this so they never load every row into memory (memory → DB).
+  def self.sum_duration_minutes
+    sum("((julianday(end_at) - julianday(start_at)) * 24 * 60)").to_i
+  end
+
   # Whole minutes between start and end (negative when end < start).
   def duration_minutes
     return 0 unless start_at && end_at

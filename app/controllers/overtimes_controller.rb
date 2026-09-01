@@ -12,7 +12,8 @@ class OvertimesController < ApplicationController
 
     filtered = @ransack.result
     # The summary covers the whole filtered period, not just the visible page.
-    @summary = filtered.sum(&:duration_minutes) / 60.0
+    # Computed in SQL (julianday) so large periods never load every row.
+    @summary = filtered.sum_duration_minutes / 60.0
     @pagy, @overtimes = pagy(filtered, limit: ITEMS_PER_PAGE)
 
     respond_to do |format|
@@ -171,7 +172,7 @@ class OvertimesController < ApplicationController
     end
 
     def recompute_summary
-      @summary = @ransack.result.sum(&:duration_minutes) / 60.0
+      @summary = @ransack.result.sum_duration_minutes / 60.0
     end
 
     def within_filter?(overtime)

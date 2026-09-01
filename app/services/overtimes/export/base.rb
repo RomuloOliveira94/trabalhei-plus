@@ -28,7 +28,7 @@ module Overtimes
       end
 
       def total_duration_minutes
-        @total_duration_minutes ||= overtimes.sum(&:duration_minutes)
+        @total_duration_minutes ||= overtimes.sum_duration_minutes
       end
 
       # Formal HH:MM total for the report footer (SPEC R13).
