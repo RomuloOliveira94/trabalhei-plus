@@ -6,17 +6,42 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="<%= t("layouts.application.app_name") %>">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#dc2626">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <%# SEO (Phase 6). Default description/keywords; per-page titles via
+        content_for(:title) set through the page_title helper. %>
+    <meta name="description" content="<%= t("layouts.application.meta_description") %>">
+    <meta name="keywords" content="<%= t("layouts.application.meta_keywords") %>">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="<%= content_for(:title) || t("layouts.application.app_name") %>">
+    <meta property="og:description" content="<%= t("layouts.application.meta_description") %>">
+    <meta property="og:image" content="/icon-512.png">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= content_for(:title) || t("layouts.application.app_name") %>">
+    <meta name="twitter:description" content="<%= t("layouts.application.meta_description") %>">
+    <meta name="twitter:image" content="/icon-512.png">
+    <link rel="canonical" href="<%= request.original_url %>">
 
-    <link rel="icon" href="/icon.png" type="image/png">
+    <%# PWA (Phase 6): installable app via static manifest + service worker. %>
+    <link rel="manifest" href="/manifest.webmanifest">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="alternate icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/icon.svg">
+    <script>
+      // Register the service worker only in production-like contexts where
+      // HTTPS (or localhost) is guaranteed; skip in plain HTTP dev.
+      if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js").catch(() => {});
+        });
+      }
+    </script>
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
@@ -31,11 +56,11 @@
 
     <header class="border-b border-gray-100">
       <div class="container mx-auto flex h-16 items-center justify-between px-5">
-        <%= link_to t(".app_name"), root_path, class: "text-xl font-bold text-red-600" %>
+        <%= link_to t(".app_name"), root_path, class: "text-xl font-bold text-red-600 transition-colors duration-150 hover:text-red-700" %>
 
         <% if user_signed_in? %>
           <details class="relative" data-turbo="false">
-            <summary class="flex cursor-pointer list-none items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <summary class="flex cursor-pointer list-none items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-50">
               <span class="flex h-8 w-8 items-center justify-center rounded-full bg-red-600 text-sm font-bold text-white"><%= current_user.name.first.upcase %></span>
               <span class="hidden sm:inline"><%= current_user.name %></span>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
@@ -51,7 +76,7 @@
             </div>
           </details>
         <% else %>
-          <%= link_to t(".sign_in"), new_user_session_path, class: "text-sm font-semibold text-red-600 hover:text-red-700" %>
+          <%= link_to t(".sign_in"), new_user_session_path, class: "text-sm font-semibold text-red-600 transition-colors duration-150 hover:text-red-700" %>
         <% end %>
       </div>
     </header>
