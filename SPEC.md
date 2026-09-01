@@ -42,7 +42,7 @@
 - Sessão scoped: cada usuário só vê/edita/apaga as próprias HEs.
 
 ### CRUD de Hora Extra (Overtime)
-- Campos: `start_at` (datetime), `end_at` (datetime), `description` (text, obrigatório, máx. ~500 chars).
+- Campos: `start_at` (datetime), `end_at` (datetime), `description` (text, obrigatório, máx. 2000 chars).
 - Criar, listar, editar e apagar a qualquer momento após o login.
 - Sem status (rascunho/aprovado) — toda HE é imediatamente "definitiva" para o usuário.
 
@@ -117,7 +117,7 @@ Valores com asterisco (*) são **decisões propostas** — ver §10 antes de imp
 | R12 | Formato de horas no resumo/UI | **`10,5h`** (decimal com vírgula, locale pt-BR) |
 | R13 | Formato de horas no export (PDF/Excel) | **`10:30`** (HH:MM, formal/RH) |
 | R14 | Descrição obrigatória | sim |
-| R15 | `description` tamanho máximo | 500 caracteres |
+| R15 | `description` tamanho máximo | 2000 caracteres |
 | R16 | Login com Google exige domínio específico | **não** — qualquer Google Account (v1 simples) |
 
 ---
@@ -285,7 +285,7 @@ Tudo já no `Gemfile` da omakase, exceto gems novas marcadas com **\[+\]**.
 | `user_id` | bigint | FK → users, indexed, NOT NULL |
 | `start_at` | datetime | NOT NULL |
 | `end_at` | datetime | NOT NULL |
-| `description` | text | NOT NULL, max 500 |
+| `description` | text | NOT NULL, max 2000 |
 | `deleted_at` | datetime | nullable (soft delete) |
 | `created_at` | datetime | |
 | `updated_at` | datetime | |
