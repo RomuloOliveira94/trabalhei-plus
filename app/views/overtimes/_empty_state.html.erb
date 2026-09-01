@@ -1,0 +1,15 @@
+<%# Empty state for the overtime list (SPEC §8). Also rendered by
+    destroy.turbo_stream.erb when the last record of the filter is removed,
+    and replaced by create.turbo_stream.erb when the first one is added. %>
+<div id="overtime-empty-state" class="mt-6 rounded-lg border border-dashed border-gray-200 px-6 py-12 text-center">
+  <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+  <p class="mt-4 font-medium text-gray-700"><%= t(".empty") %></p>
+  <p class="mt-1 text-sm text-gray-500"><%= t(".empty_help") %></p>
+  <p class="mt-4">
+    <%= link_to t(".empty_cta"), new_overtime_path(from: @filter_start_date, to: @filter_end_date),
+        data: { turbo_frame: "overtime_form" },
+        class: "font-semibold text-red-600 hover:text-red-700" %>
+  </p>
+</div>

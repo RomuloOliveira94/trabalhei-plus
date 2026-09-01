@@ -1,4 +1,6 @@
-<div class="rounded-lg border border-gray-100 p-4">
+<%# Mobile card. id="overtime_card_<id>" is the Turbo Stream replace/remove
+    target for update/destroy (distinct from the table row id). %>
+<div id="overtime_card_<%= overtime.id %>" class="rounded-lg border border-gray-100 p-4">
   <div class="flex items-start justify-between gap-3">
     <div>
       <p class="font-semibold text-gray-900"><%= l(overtime.start_at, format: :short_date) %></p>

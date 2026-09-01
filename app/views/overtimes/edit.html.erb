@@ -1,4 +1,8 @@
-<div class="w-full max-w-xl">
-  <h1 class="text-2xl font-bold text-gray-900"><%= t(".title") %></h1>
-  <%= render "form", overtime: @overtime %>
-</div>
+<%# Rendered inside the overtime_form frame on the index (Turbo Frame request)
+    or as a standalone page when visited directly. %>
+<%= turbo_frame_tag "overtime_form" do %>
+  <div class="w-full max-w-xl">
+    <h1 class="text-2xl font-bold text-gray-900"><%= t(".title") %></h1>
+    <%= render "form", overtime: @overtime %>
+  </div>
+<% end %>

@@ -7,18 +7,7 @@ class OvertimesController < ApplicationController
   before_action :set_overtime, only: %i[ show edit update destroy ]
 
   def index
-    search = index_search_params
-    @filter_start_date = filter_date(search[:start_at_gteq]) || Date.current.beginning_of_month
-    @filter_end_date = filter_date(search[:start_at_lteq]) || Date.current.end_of_month
-
-    # Date inputs are day-granular; widen them to full days in the app time
-    # zone (America/Sao_Paulo) so both range ends are inclusive.
-    @ransack = current_user.overtimes.ransack(
-      search.merge(
-        "start_at_gteq" => @filter_start_date.in_time_zone.beginning_of_day,
-        "start_at_lteq" => @filter_end_date.in_time_zone.end_of_day
-      )
-    )
+    @ransack = build_ransack(index_search_params)
     @ransack.sorts = "start_at asc" if @ransack.sorts.empty?
 
     filtered = @ransack.result
@@ -45,24 +34,53 @@ class OvertimesController < ApplicationController
 
   def new
     @overtime = current_user.overtimes.build
+    set_filter_from_params
   end
 
   def create
     @overtime = current_user.overtimes.build(overtime_params)
 
     if @overtime.save
-      redirect_to overtimes_path, notice: t("overtimes.create.created")
+      set_filter_from_params
+      @within_filter = within_filter?(@overtime)
+
+      if @within_filter
+        recompute_summary
+        # The index shows the empty state (no list frame) when the filter has
+        # no records; the stream must then replace it with the list instead of
+        # appending to a table body that does not exist.
+        @was_empty = @ransack.result.where.not(id: @overtime.id).empty?
+        @pagy, @overtimes = pagy(@ransack.result, limit: ITEMS_PER_PAGE) if @was_empty
+        flash.now[:notice] = t("overtimes.create.created")
+        respond_to do |format|
+          format.turbo_stream
+          format.html { redirect_to overtimes_path, notice: t("overtimes.create.created") }
+        end
+      else
+        # Created outside the active filter: a plain redirect shows the list
+        # (and the flash) instead of silently hiding the new record.
+        redirect_to overtimes_path, notice: t("overtimes.create.created")
+      end
     else
       render :new, status: :unprocessable_entity
     end
   end
 
   def edit
+    set_filter_from_params
   end
 
   def update
     if @overtime.update(overtime_params)
-      redirect_to overtimes_path, notice: t("overtimes.update.updated")
+      set_filter_from_params
+      @within_filter = within_filter?(@overtime)
+      recompute_summary
+      @filtered_empty = @ransack.result.empty?
+      flash.now[:notice] = t("overtimes.update.updated")
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to overtimes_path, notice: t("overtimes.update.updated") }
+      end
     else
       render :edit, status: :unprocessable_entity
     end
@@ -70,7 +88,14 @@ class OvertimesController < ApplicationController
 
   def destroy
     @overtime.discard!
-    redirect_to overtimes_path, notice: t("overtimes.destroy.destroyed")
+    set_filter_from_params
+    recompute_summary
+    @filtered_empty = @ransack.result.empty?
+    flash.now[:notice] = t("overtimes.destroy.destroyed")
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to overtimes_path, notice: t("overtimes.destroy.destroyed") }
+    end
   end
 
   # The export form captures the active Ransack filter as plain `from`/`to`
@@ -114,5 +139,41 @@ class OvertimesController < ApplicationController
       Date.parse(value.to_s)
     rescue ArgumentError, TypeError
       nil
+    end
+
+    # Builds the Ransack search for the active date range and sets the
+    # @filter_start_date/@filter_end_date display bounds. Date inputs are
+    # day-granular; they are widened to full days in the app time zone
+    # (America/Sao_Paulo) so both range ends are inclusive (SPEC §5 R8).
+    def build_ransack(search)
+      @filter_start_date = filter_date(search[:start_at_gteq]) || Date.current.beginning_of_month
+      @filter_end_date = filter_date(search[:start_at_lteq]) || Date.current.end_of_month
+
+      current_user.overtimes.ransack(
+        search.merge(
+          "start_at_gteq" => @filter_start_date.in_time_zone.beginning_of_day,
+          "start_at_lteq" => @filter_end_date.in_time_zone.end_of_day
+        )
+      )
+    end
+
+    # create/update/destroy receive the active filter as plain `from`/`to`
+    # params (hidden fields in the form), mirroring the export forms, so the
+    # summary and the append/replace/remove decisions stay in sync with what
+    # the user was looking at.
+    def set_filter_from_params
+      search = {}
+      search[:start_at_gteq] = params[:from] if params[:from].present?
+      search[:start_at_lteq] = params[:to] if params[:to].present?
+      @ransack = build_ransack(search)
+    end
+
+    def recompute_summary
+      @summary = @ransack.result.sum(&:duration_minutes) / 60.0
+    end
+
+    def within_filter?(overtime)
+      overtime.start_at >= @filter_start_date.in_time_zone.beginning_of_day &&
+        overtime.start_at <= @filter_end_date.in_time_zone.end_of_day
     end
 end

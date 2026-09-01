@@ -1,4 +1,10 @@
+<%# The active filter travels as hidden from/to so create/update can keep the
+    summary and the append/replace decisions in sync with the list the user
+    came from (mirrors the export forms). %>
 <%= form_with model: overtime do |f| %>
+  <%= hidden_field_tag :from, @filter_start_date %>
+  <%= hidden_field_tag :to, @filter_end_date %>
+
   <% if overtime.errors.any? %>
     <div id="error_explanation" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
       <p class="font-semibold"><%= t(".error_notice", count: overtime.errors.count) %></p>

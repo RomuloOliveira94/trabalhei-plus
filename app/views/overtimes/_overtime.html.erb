@@ -1,4 +1,6 @@
-<tr class="hover:bg-gray-50">
+<%# Desktop table row. id="overtime_<id>" is the Turbo Stream replace/remove
+    target for update/destroy. %>
+<tr id="overtime_<%= overtime.id %>" class="hover:bg-gray-50">
   <td class="whitespace-nowrap px-4 py-3 font-medium text-gray-900"><%= l(overtime.start_at, format: :short_date) %></td>
   <td class="whitespace-nowrap px-4 py-3"><%= l(overtime.start_at, format: :hours_minutes) %></td>
   <td class="whitespace-nowrap px-4 py-3"><%= l(overtime.end_at, format: :hours_minutes) %></td>

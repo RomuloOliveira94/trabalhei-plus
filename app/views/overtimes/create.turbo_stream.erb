@@ -1,0 +1,26 @@
+<%# Turbo Stream response for create (SPEC AC-1): append the new row/card to
+    the list, refresh the summary and reset the inline form frame. When the
+    filter was empty the empty state is replaced by the full list frame. %>
+<% if @was_empty %>
+  <%= turbo_stream.replace "overtime-empty-state" do %>
+    <%= render "list" %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.append "overtimes-table-body" do %>
+    <%= render @overtime %>
+  <% end %>
+  <%= turbo_stream.append "overtimes-mobile-list" do %>
+    <%= render partial: "overtime_card", locals: { overtime: @overtime } %>
+  <% end %>
+<% end %>
+<%= turbo_stream.update "overtime-summary" do %>
+  <%= render "summary" %>
+<% end %>
+<%= turbo_stream.replace "overtime_form" do %>
+  <%= turbo_frame_tag "overtime_form" %>
+<% end %>
+<% if flash.any? %>
+  <%= turbo_stream.update "flash" do %>
+    <%= render "shared/flash" %>
+  <% end %>
+<% end %>

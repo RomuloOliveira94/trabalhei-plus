@@ -1,0 +1,8 @@
+<%# Month/period summary card. id="overtime-summary" is the Turbo Stream
+    target so create/update/destroy can refresh the total in place. %>
+<div id="overtime-summary" class="mt-6 rounded-lg border border-gray-100 bg-gray-50 px-5 py-4">
+  <p class="text-sm font-medium text-gray-600"><%= t(".total_hours") %></p>
+  <p class="mt-1 text-3xl font-bold text-red-600">
+    <%= number_with_precision(@summary, precision: 1, separator: ",", delimiter: ".") %>h
+  </p>
+</div>

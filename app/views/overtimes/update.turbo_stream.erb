@@ -1,0 +1,30 @@
+<%# Turbo Stream response for update (SPEC AC-2): replace the row/card in
+    place, refresh the summary and reset the inline form frame. If the record
+    moved outside the active filter it is removed instead; if the list became
+    empty the whole frame is swapped for the empty state. %>
+<% if @filtered_empty %>
+  <%= turbo_stream.replace "overtime_list" do %>
+    <%= render "empty_state" %>
+  <% end %>
+<% elsif @within_filter %>
+  <%= turbo_stream.replace "overtime_#{@overtime.id}" do %>
+    <%= render @overtime %>
+  <% end %>
+  <%= turbo_stream.replace "overtime_card_#{@overtime.id}" do %>
+    <%= render partial: "overtime_card", locals: { overtime: @overtime } %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.remove "overtime_#{@overtime.id}" %>
+  <%= turbo_stream.remove "overtime_card_#{@overtime.id}" %>
+<% end %>
+<%= turbo_stream.update "overtime-summary" do %>
+  <%= render "summary" %>
+<% end %>
+<%= turbo_stream.replace "overtime_form" do %>
+  <%= turbo_frame_tag "overtime_form" %>
+<% end %>
+<% if flash.any? %>
+  <%= turbo_stream.update "flash" do %>
+    <%= render "shared/flash" %>
+  <% end %>
+<% end %>

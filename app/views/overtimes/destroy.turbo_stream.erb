@@ -1,0 +1,19 @@
+<%# Turbo Stream response for destroy (SPEC AC-3): remove the row/card and
+    refresh the summary. When the last record of the filter is removed the
+    whole list frame is swapped for the empty state. %>
+<% if @filtered_empty %>
+  <%= turbo_stream.replace "overtime_list" do %>
+    <%= render "empty_state" %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.remove "overtime_#{@overtime.id}" %>
+  <%= turbo_stream.remove "overtime_card_#{@overtime.id}" %>
+<% end %>
+<%= turbo_stream.update "overtime-summary" do %>
+  <%= render "summary" %>
+<% end %>
+<% if flash.any? %>
+  <%= turbo_stream.update "flash" do %>
+    <%= render "shared/flash" %>
+  <% end %>
+<% end %>
