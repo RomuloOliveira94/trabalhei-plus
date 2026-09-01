@@ -32,9 +32,11 @@ class AuthTest < ActionDispatch::IntegrationTest
   test "signs in with valid credentials" do
     post user_session_path, params: { user: { email: users(:one).email, password: "password123" } }
 
-    # Devise redirects to the authenticated root (user_root_path), which is
-    # the overtime index rendered at "/".
+    # Devise redirects to the authenticated root (user_root_path), which now
+    # redirects to the overtime list at /overtimes (QA blocker fix).
     assert_redirected_to root_path
+    follow_redirect!
+    assert_redirected_to overtimes_path
     follow_redirect!
     assert_select "h1", "Minhas horas extras"
   end
@@ -67,10 +69,12 @@ class AuthTest < ActionDispatch::IntegrationTest
     assert_select "button", "Entrar com Google"
   end
 
-  test "root shows signed-in users their overtime list" do
+  test "root redirects signed-in users to the overtime list" do
     sign_in users(:one)
     get root_path
 
+    assert_redirected_to overtimes_path
+    follow_redirect!
     assert_response :success
     assert_select "h1", "Minhas horas extras"
   end
@@ -89,6 +93,8 @@ class AuthTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to root_path
+    follow_redirect!
+    assert_redirected_to overtimes_path
     follow_redirect!
     assert_select "h1", "Minhas horas extras"
   end

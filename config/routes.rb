@@ -4,12 +4,14 @@ Rails.application.routes.draw do
   devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks" }
 
   # Root: guests land on the sign-in page rendered at "/" (clean URL); signed-in
-  # users are sent straight to their overtime list. Devise's after_sign_in_path
-  # uses the authenticated root (user_root_path), so login lands on /overtimes
-  # (SPEC §3). The unauthenticated root keeps the plain root_path helper and
-  # must live inside devise_scope so Devise resolves the user mapping.
+  # users are redirected to their overtime list at /overtimes. Devise's
+  # after_sign_in_path uses the authenticated root (user_root_path), so login
+  # lands on /overtimes (SPEC §3). The authenticated root must redirect (not
+  # render) so the browser URL becomes /overtimes instead of staying at "/".
+  # The unauthenticated root keeps the plain root_path helper and must live
+  # inside devise_scope so Devise resolves the user mapping.
   authenticated :user do
-    root to: "overtimes#index", as: :authenticated_root
+    root to: redirect("/overtimes"), as: :authenticated_root
   end
 
   devise_scope :user do
