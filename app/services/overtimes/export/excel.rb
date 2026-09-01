@@ -46,8 +46,7 @@ module Overtimes
           label_style = sheet.styles.add_style(b: true)
 
           [
-            [ I18n.t("overtimes.export.employee_label"), user.name ],
-            [ I18n.t("overtimes.export.email_label"), user.email ],
+            [ I18n.t("overtimes.export.usuario_label"), user.name ],
             [ I18n.t("overtimes.export.period_label"), period_label ],
             [ I18n.t("overtimes.export.total_label"), formatted_total ]
           ].each { |row| sheet.add_row row, style: label_style }

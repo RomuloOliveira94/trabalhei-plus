@@ -14,6 +14,15 @@ class Overtimes::Export::PdfTest < ActiveSupport::TestCase
     assert_equal "application/pdf", report.content_type
   end
 
+  test "subheader shows the user's name only, without the email" do
+    report = build_report(users(:one))
+
+    text = pdf_text(report.render)
+
+    assert_match "Usuário: Ana Souza", text
+    assert_no_match /ana@example\.com/, text
+  end
+
   test "renders an empty-but-valid PDF with a zero total when nothing matches" do
     next_month = Date.current.next_month
     report = build_report(users(:one), from: next_month.beginning_of_month, to: next_month.end_of_month)

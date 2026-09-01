@@ -24,6 +24,10 @@ class ExportButtonsTest < ApplicationSystemTestCase
     downloaded = wait_for_download(/\.pdf\z/)
     assert downloaded, "expected a .pdf file to be downloaded"
     assert_match(/horas_extras_ana-souza_\d{8}_a_\d{8}\.pdf/, downloaded)
+
+    text = pdf_text(File.binread(downloaded))
+    assert_match "Usuário: Ana Souza", text
+    assert_no_match /ana@example\.com/, text
   end
 
   test "excel button downloads an xlsx" do
@@ -34,6 +38,11 @@ class ExportButtonsTest < ApplicationSystemTestCase
     downloaded = wait_for_download(/\.xlsx\z/)
     assert downloaded, "expected a .xlsx file to be downloaded"
     assert_match(/horas_extras_ana-souza_\d{8}_a_\d{8}\.xlsx/, downloaded)
+
+    text = xlsx_text(File.binread(downloaded))
+    assert_includes text, "Usuário"
+    assert_includes text, "Ana Souza"
+    assert_not_includes text, "ana@example.com"
   end
 
   test "export respects the active Ransack filter" do

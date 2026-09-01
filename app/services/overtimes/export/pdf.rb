@@ -35,8 +35,7 @@ module Overtimes
         doc.text I18n.t("overtimes.export.pdf_title"), size: 16, style: :bold, align: :center
         doc.move_down 14
 
-        doc.text I18n.t("overtimes.export.employee", name: user.name), size: 11
-        doc.text I18n.t("overtimes.export.email", email: user.email), size: 9, color: "666666"
+        doc.text I18n.t("overtimes.export.usuario", name: user.name), size: 11
         doc.move_down 6
         doc.text I18n.t("overtimes.export.period", period: period_label), size: 11
         doc.move_down 6

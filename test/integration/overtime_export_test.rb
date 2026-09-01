@@ -22,6 +22,10 @@ class OvertimeExportTest < ActionDispatch::IntegrationTest
     assert_equal "application/pdf", response.media_type
     assert response.body.start_with?("%PDF-")
     assert_match(/filename="horas_extras_ana-souza_/, response.headers["Content-Disposition"])
+
+    text = pdf_text(response.body)
+    assert_match "Usuário: Ana Souza", text
+    assert_no_match /ana@example\.com/, text
   end
 
   test "export_xlsx returns an xlsx with the expected filename" do
@@ -35,6 +39,11 @@ class OvertimeExportTest < ActionDispatch::IntegrationTest
     assert_equal "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", response.media_type
     assert response.body.start_with?("PK")
     assert_match(/filename="horas_extras_ana-souza_/, response.headers["Content-Disposition"])
+
+    text = xlsx_text(response.body)
+    assert_includes text, "Usuário"
+    assert_includes text, "Ana Souza"
+    assert_not_includes text, "ana@example.com"
   end
 
   test "export filename reflects the requested period" do
