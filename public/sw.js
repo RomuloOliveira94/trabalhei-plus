@@ -2,7 +2,7 @@
 // Cache-first for static assets (icons, manifest, CSS, JS); network-first
 // for page navigations, falling back to the cached copy and then to the
 // offline page when the network is unavailable.
-const CACHE_NAME = "trabalhei-mais-v1";
+const CACHE_NAME = "trabalhei-plus-v1";
 const PRECACHE_URLS = [
   "/icon.svg",
   "/icon-192.png",
