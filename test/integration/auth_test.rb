@@ -83,7 +83,7 @@ class AuthTest < ActionDispatch::IntegrationTest
     OmniAuth.config.test_mode = true
     OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new(
       provider: "google_oauth2", uid: "123456",
-      info: { name: "Google User", email: "google@example.com" }
+      info: { name: "Google User", email: "google@example.com", email_verified: true }
     )
 
     assert_difference -> { User.count }, 1 do
@@ -103,7 +103,7 @@ class AuthTest < ActionDispatch::IntegrationTest
     OmniAuth.config.test_mode = true
     OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new(
       provider: "google_oauth2", uid: "999999",
-      info: { name: "Nome Google", email: users(:one).email }
+      info: { name: "Nome Google", email: users(:one).email, email_verified: true }
     )
 
     assert_no_difference -> { User.count } do
@@ -113,6 +113,27 @@ class AuthTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to root_path
+  end
+
+  test "google omniauth callback rejects an unverified email with a pt-BR flash" do
+    OmniAuth.config.test_mode = true
+    OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new(
+      provider: "google_oauth2", uid: "777777",
+      info: { name: "Atacante", email: users(:one).email, email_verified: false }
+    )
+
+    assert_no_difference -> { User.count } do
+      post user_google_oauth2_omniauth_authorize_path
+      assert_response :redirect
+      post user_google_oauth2_omniauth_callback_path
+    end
+
+    assert_redirected_to new_user_session_path
+    follow_redirect!
+    assert_response :success
+    assert_match "o e-mail da conta Google não foi verificado", response.body
+    # The existing account was NOT signed in (no takeover).
+    assert_nil session["warden.user.user.key"]
   end
 
   test "omniauth authorize with blank credentials does not blow up" do

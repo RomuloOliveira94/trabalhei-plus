@@ -11,7 +11,13 @@ class User < ApplicationRecord
   # Finds an existing user by the OmniAuth e-mail or creates a new one.
   # OAuth users never use the password form, but Devise requires one,
   # so they get a random secure secret.
+  #
+  # The provider must mark the e-mail as verified before it can be linked to
+  # an account: otherwise an attacker controlling an unverified address could
+  # take over the account that holds it (account takeover via Google OAuth).
   def self.from_omniauth(auth)
+    raise OmniAuth::EmailNotVerified unless auth.info.email_verified == true
+
     find_or_create_by!(email: auth.info.email) do |user|
       user.name = auth.info.name.presence || auth.info.email
       user.password = SecureRandom.hex(32)

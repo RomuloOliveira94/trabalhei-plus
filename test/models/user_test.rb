@@ -18,7 +18,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "from_omniauth returns the existing user with the same email" do
-    auth = OmniAuth::AuthHash.new(info: { name: "Outro Nome", email: users(:one).email })
+    auth = OmniAuth::AuthHash.new(info: { name: "Outro Nome", email: users(:one).email, email_verified: true })
 
     assert_no_difference -> { User.count } do
       assert_equal users(:one), User.from_omniauth(auth)
@@ -27,7 +27,7 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "from_omniauth creates a user with a random password" do
-    auth = OmniAuth::AuthHash.new(info: { name: "Google User", email: "google@example.com" })
+    auth = OmniAuth::AuthHash.new(info: { name: "Google User", email: "google@example.com", email_verified: true })
 
     user = assert_difference -> { User.count }, 1 do
       User.from_omniauth(auth)
@@ -40,9 +40,27 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "from_omniauth falls back to the email when the name is blank" do
-    auth = OmniAuth::AuthHash.new(info: { name: "", email: "noname@example.com" })
+    auth = OmniAuth::AuthHash.new(info: { name: "", email: "noname@example.com", email_verified: true })
 
     user = User.from_omniauth(auth)
     assert_equal "noname@example.com", user.name
+  end
+
+  test "from_omniauth rejects an unverified email (account takeover guard)" do
+    auth = OmniAuth::AuthHash.new(info: { name: "Atacante", email: users(:one).email, email_verified: false })
+
+    assert_no_difference -> { User.count } do
+      assert_raises(OmniAuth::EmailNotVerified) do
+        User.from_omniauth(auth)
+      end
+    end
+  end
+
+  test "from_omniauth rejects a missing email_verified flag" do
+    auth = OmniAuth::AuthHash.new(info: { name: "Atacante", email: users(:one).email })
+
+    assert_raises(OmniAuth::EmailNotVerified) do
+      User.from_omniauth(auth)
+    end
   end
 end

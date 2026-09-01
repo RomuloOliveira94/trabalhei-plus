@@ -31,6 +31,10 @@ pt-BR:
       sign_in: "Entrar"
       sign_out: "Sair"
   devise:
+    omniauth_callbacks:
+      success: "Autenticado com sucesso pela conta %{kind}."
+      failure: "Não foi possível autenticar você via %{kind}: %{reason}."
+      email_not_verified: "Não foi possível entrar com %{kind}: o e-mail da conta Google não foi verificado."
     sessions:
       new:
         sign_in: "Entrar"
