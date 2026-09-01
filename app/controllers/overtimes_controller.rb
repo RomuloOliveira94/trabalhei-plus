@@ -33,7 +33,9 @@ class OvertimesController < ApplicationController
   end
 
   def new
-    @overtime = current_user.overtimes.build
+    # Phase 6: pre-select today so the user only adjusts the times (SPEC §3
+    # flow step 3). Edit keeps the stored values.
+    @overtime = current_user.overtimes.build(start_at: Time.zone.now.beginning_of_day, end_at: Time.zone.now.beginning_of_day)
     set_filter_from_params
   end
 

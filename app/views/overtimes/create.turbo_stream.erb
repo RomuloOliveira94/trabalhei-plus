@@ -14,7 +14,7 @@
   <% end %>
 <% end %>
 <%= turbo_stream.update "overtime-summary" do %>
-  <%= render "summary" %>
+  <%= render "total_summary" %>
 <% end %>
 <%= turbo_stream.replace "overtime_form" do %>
   <%= turbo_frame_tag "overtime_form" %>

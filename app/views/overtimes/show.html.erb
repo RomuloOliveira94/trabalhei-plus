@@ -1,3 +1,4 @@
+<% page_title t(".title") %>
 <div class="w-full max-w-xl">
   <h1 class="text-2xl font-bold text-gray-900"><%= t(".title") %></h1>
 
@@ -24,7 +25,7 @@
   </dl>
 
   <div class="mt-6 flex items-center gap-4">
-    <%= link_to t(".edit"), edit_overtime_path(@overtime), class: "rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700" %>
-    <%= link_to t(".back"), overtimes_path, class: "text-sm font-medium text-gray-500 hover:text-gray-700" %>
+    <%= link_to t(".edit"), edit_overtime_path(@overtime), class: "rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-200" %>
+    <%= link_to t(".back"), overtimes_path, class: "text-sm font-medium text-gray-500 transition-colors duration-150 hover:text-gray-700" %>
   </div>
 </div>

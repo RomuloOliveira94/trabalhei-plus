@@ -10,7 +10,7 @@
   <%= turbo_stream.remove "overtime_card_#{@overtime.id}" %>
 <% end %>
 <%= turbo_stream.update "overtime-summary" do %>
-  <%= render "summary" %>
+  <%= render "total_summary" %>
 <% end %>
 <% if flash.any? %>
   <%= turbo_stream.update "flash" do %>

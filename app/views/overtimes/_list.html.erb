@@ -2,7 +2,7 @@
     index and by create.turbo_stream.erb when the first record of an empty
     filter replaces the empty state. Requires @overtimes, @pagy and @ransack. %>
 <%= turbo_frame_tag "overtime_list", data: { turbo_action: "advance" } do %>
-  <div class="mt-6 hidden overflow-x-auto rounded-lg border border-gray-100 md:block">
+  <div class="mt-6 hidden overflow-x-auto rounded-lg border border-gray-100 bg-white shadow-sm md:block">
     <table class="min-w-full divide-y divide-gray-100 text-left text-sm">
       <thead class="text-xs font-semibold uppercase tracking-wide text-gray-500">
         <tr>
@@ -28,6 +28,6 @@
 
   <div id="overtimes-mobile-list" class="mt-6 space-y-3 md:hidden" data-controller="infinite-scroll">
     <%= render partial: "overtime_card", collection: @overtimes, as: :overtime %>
-    <%= render "sentinel", pagy: @pagy if @pagy.next %>
+    <%= render "pagination_sentinel", pagy: @pagy if @pagy.next %>
   </div>
 <% end %>

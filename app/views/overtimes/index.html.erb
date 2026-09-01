@@ -1,3 +1,4 @@
+<% page_title t(".title") %>
 <div class="w-full">
   <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
@@ -13,23 +14,23 @@
       <%= form_with url: export_overtimes_pdf_path, method: :get, data: { turbo: false } do %>
         <%= hidden_field_tag :from, @filter_start_date %>
         <%= hidden_field_tag :to, @filter_end_date %>
-        <%= submit_tag t(".export_pdf"), class: "inline-flex cursor-pointer items-center justify-center rounded-lg border border-red-600 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50" %>
+        <%= submit_tag t(".export_pdf"), class: "inline-flex cursor-pointer items-center justify-center rounded-lg border border-red-600 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition-colors duration-150 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200" %>
       <% end %>
       <%= form_with url: export_overtimes_xlsx_path, method: :get, data: { turbo: false } do %>
         <%= hidden_field_tag :from, @filter_start_date %>
         <%= hidden_field_tag :to, @filter_end_date %>
-        <%= submit_tag t(".export_xlsx"), class: "inline-flex cursor-pointer items-center justify-center rounded-lg border border-red-600 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50" %>
+        <%= submit_tag t(".export_xlsx"), class: "inline-flex cursor-pointer items-center justify-center rounded-lg border border-red-600 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition-colors duration-150 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200" %>
       <% end %>
       <%# Desktop keeps the in-header button; mobile uses the FAB instead.
           Both open the CRUD modal (dialog-modal) instead of navigating. %>
       <% new_url = new_overtime_path(from: @filter_start_date, to: @filter_end_date) %>
       <%= link_to t(".new_overtime"), new_url,
           data: { dialog_modal_url_value: new_url, dialog_modal_title_value: t("overtimes.new.title") },
-          class: "hidden md:inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700" %>
+          class: "hidden md:inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-200" %>
     </div>
   </div>
 
-  <%= render "summary" %>
+  <%= render "total_summary" %>
 
   <%# Mobile filter sheet: collapsible <details>; desktop keeps the inline form. %>
   <details id="filter-sheet" class="group mt-6 md:hidden">
@@ -43,12 +44,12 @@
       </svg>
     </summary>
     <div class="mt-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
-      <%= render "filter_form" %>
+      <%= render "date_filter_form" %>
     </div>
   </details>
 
   <div class="mt-6 hidden md:block">
-    <%= render "filter_form" %>
+    <%= render "date_filter_form" %>
   </div>
 
   <%# The CRUD form lives in the dialog-modal (shared/_dialog_modal), loaded
@@ -65,7 +66,7 @@
       CRUD modal like the desktop button. %>
   <%= link_to new_url,
       data: { dialog_modal_url_value: new_url, dialog_modal_title_value: t("overtimes.new.title") },
-      class: "fixed bottom-6 right-5 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-red-600 text-white shadow-lg hover:bg-red-700 md:hidden",
+      class: "fixed bottom-6 right-5 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition-colors duration-150 hover:bg-red-700 md:hidden",
       aria: { label: t(".new_overtime") } do %>
     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />

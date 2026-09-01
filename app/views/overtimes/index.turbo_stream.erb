@@ -7,6 +7,6 @@
 <% if params[:page].to_i.between?(2, @pagy.last) %>
   <%= turbo_stream.append "overtimes-mobile-list" do %>
     <%= render partial: "overtime_card", collection: @overtimes, as: :overtime %>
-    <%= render "sentinel", pagy: @pagy if @pagy.next %>
+    <%= render "pagination_sentinel", pagy: @pagy if @pagy.next %>
   <% end %>
 <% end %>

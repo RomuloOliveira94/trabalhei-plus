@@ -2,8 +2,8 @@
     (Pagy::Offset). Current page: solid red; other pages: gray outline.
     SPEC AC-9: Primeira / Anterior / páginas / Próxima / Última. %>
 <%
-  link_classes = "inline-flex h-9 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
-  page_classes = "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+  link_classes = "inline-flex h-9 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-50"
+  page_classes = "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-50"
   disabled_classes = "inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-300"
 %>
 <nav aria-label="<%= t(".aria_label") %>" class="flex flex-wrap items-center justify-center gap-1.5">

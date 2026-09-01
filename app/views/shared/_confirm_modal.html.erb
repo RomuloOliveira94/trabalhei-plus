@@ -16,11 +16,11 @@
       <p id="confirm-modal-body" data-confirm-modal-target="body" class="mt-2 text-sm text-gray-600"></p>
       <div class="mt-6 flex justify-end gap-3">
         <button type="button" data-confirm-modal-target="cancelButton" data-action="confirm-modal#cancel"
-                class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                class="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-50">
           <%= t("components.confirm_modal.cancel") %>
         </button>
         <button type="button" data-confirm-modal-target="confirmButton" data-action="confirm-modal#confirm"
-                class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">
+                class="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-red-700">
           <%= t("components.confirm_modal.confirm") %>
         </button>
       </div>
