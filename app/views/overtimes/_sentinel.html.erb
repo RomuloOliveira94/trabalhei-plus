@@ -1,0 +1,9 @@
+<%# Infinite-scroll sentinel (mobile only): watched by the infinite-scroll
+    controller; data-next-url points at the next page as a Turbo Stream
+    request. Not rendered on the last page, which stops the scrolling. %>
+<div id="overtime-sentinel"
+     class="py-4 text-center text-sm text-gray-400"
+     data-infinite-scroll-target="sentinel"
+     data-next-url="<%= pagy_url_for(pagy, pagy.next) %>">
+  <%= t(".loading") %>
+</div>

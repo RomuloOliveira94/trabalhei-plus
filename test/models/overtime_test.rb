@@ -138,13 +138,21 @@ class OvertimeTest < ActiveSupport::TestCase
   end
 
   test "for_user scopes to the given user" do
-    assert_equal [ overtimes(:from_bruno).id ], Overtime.for_user(users(:two)).map(&:id)
+    records = Overtime.for_user(users(:two)).to_a
+
+    assert records.all? { |record| record.user_id == users(:two).id }
+    assert_includes records, overtimes(:from_bruno)
+    assert_not_includes records, overtimes(:one)
   end
 
   test "chronological orders by start_at ascending" do
-    ids = Overtime.for_user(users(:one)).chronological.map(&:id)
+    records = Overtime.for_user(users(:one)).chronological.to_a
+    start_ats = records.map(&:start_at)
 
-    assert_equal [ overtimes(:previous_month).id, overtimes(:one).id ], ids
+    assert_equal start_ats.sort, start_ats
+    # The two base fixtures keep their relative order (previous month first).
+    assert_operator records.index { |record| record.id == overtimes(:previous_month).id }, :<,
+                    records.index { |record| record.id == overtimes(:one).id }
   end
 
   test "ransackable attributes are explicitly whitelisted" do

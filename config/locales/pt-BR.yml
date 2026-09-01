@@ -50,6 +50,15 @@ pt-BR:
       edit: "Editar"
       delete: "Apagar"
       confirm_delete: "Apagar esta hora extra?"
+    pagination:
+      aria_label: "Paginação"
+      first: "Primeira"
+      prev: "Anterior"
+      next: "Próxima"
+      last: "Última"
+      gap: "…"
+    sentinel:
+      loading: "Carregando mais horas extras…"
     new:
       title: "Nova hora extra"
     edit:

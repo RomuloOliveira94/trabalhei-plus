@@ -29,27 +29,42 @@
   <% end %>
 
   <% if @overtimes.any? %>
-    <div class="mt-6 hidden overflow-x-auto rounded-lg border border-gray-100 md:block">
-      <table class="min-w-full divide-y divide-gray-100 text-left text-sm">
-        <thead class="text-xs font-semibold uppercase tracking-wide text-gray-500">
-          <tr>
-            <th class="px-4 py-3"><%= t(".column_date") %></th>
-            <th class="px-4 py-3"><%= t(".column_start") %></th>
-            <th class="px-4 py-3"><%= t(".column_end") %></th>
-            <th class="px-4 py-3"><%= t(".column_duration") %></th>
-            <th class="px-4 py-3"><%= t(".column_description") %></th>
-            <th class="px-4 py-3 text-right"><%= t(".column_actions") %></th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          <%= render @overtimes %>
-        </tbody>
-      </table>
-    </div>
+    <%# Desktop pagination navigates this frame; data-turbo-action="advance"
+        keeps the URL in sync (Turbo handbook "Promoting a Frame Navigation
+        to a Page Visit"). The mobile list lives inside the same frame so
+        both breakpoints stay in sync. Row actions opt out with
+        data-turbo-frame="_top" (see _overtime_actions) to keep their
+        full-page redirects and flash notices. %>
+    <%= turbo_frame_tag "overtime_list", data: { turbo_action: "advance" } do %>
+      <div class="mt-6 hidden overflow-x-auto rounded-lg border border-gray-100 md:block">
+        <table class="min-w-full divide-y divide-gray-100 text-left text-sm">
+          <thead class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <tr>
+              <th class="px-4 py-3"><%= t(".column_date") %></th>
+              <th class="px-4 py-3"><%= t(".column_start") %></th>
+              <th class="px-4 py-3"><%= t(".column_end") %></th>
+              <th class="px-4 py-3"><%= t(".column_duration") %></th>
+              <th class="px-4 py-3"><%= t(".column_description") %></th>
+              <th class="px-4 py-3 text-right"><%= t(".column_actions") %></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <%= render @overtimes %>
+          </tbody>
+        </table>
+      </div>
 
-    <div class="mt-6 space-y-3 md:hidden">
-      <%= render partial: "overtime_card", collection: @overtimes, as: :overtime %>
-    </div>
+      <% if @pagy.pages > 1 %>
+        <div class="mt-6 hidden justify-center md:flex">
+          <%= render "pagination", pagy: @pagy %>
+        </div>
+      <% end %>
+
+      <div id="overtimes-mobile-list" class="mt-6 space-y-3 md:hidden" data-controller="infinite-scroll">
+        <%= render partial: "overtime_card", collection: @overtimes, as: :overtime %>
+        <%= render "sentinel", pagy: @pagy if @pagy.next %>
+      </div>
+    <% end %>
   <% else %>
     <div class="mt-6 rounded-lg border border-dashed border-gray-200 px-6 py-12 text-center">
       <p class="text-gray-600"><%= t(".empty") %></p>

@@ -54,6 +54,8 @@ gem "omniauth-google-oauth2", "~> 1.1"
 gem "ransack", "~> 4.3"
 # Soft delete via discarded_at column [https://github.com/jhawthorn/discard]
 gem "discard", "~> 1.4"
+# Pagination for the overtime list (buttons + infinite scroll) [https://github.com/ddnexus/pagy]
+gem "pagy", "~> 9.0"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

@@ -1,0 +1,12 @@
+<%# Next page for the mobile infinite scroll (infinite_scroll_controller.js).
+    The spent sentinel is removed first; the new cards — and a fresh sentinel
+    when more pages remain — are appended to the mobile list. A stale request
+    for a page beyond the last one (records deleted meanwhile) appends
+    nothing and just drops the sentinel, so the scrolling stops cleanly. %>
+<%= turbo_stream.remove "overtime-sentinel" %>
+<% if params[:page].to_i.between?(2, @pagy.last) %>
+  <%= turbo_stream.append "overtimes-mobile-list" do %>
+    <%= render partial: "overtime_card", collection: @overtimes, as: :overtime %>
+    <%= render "sentinel", pagy: @pagy if @pagy.next %>
+  <% end %>
+<% end %>

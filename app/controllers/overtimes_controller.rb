@@ -1,4 +1,8 @@
 class OvertimesController < ApplicationController
+  include Pagy::Backend
+
+  ITEMS_PER_PAGE = 20
+
   before_action :authenticate_user!
   before_action :set_overtime, only: %i[ show edit update destroy ]
 
@@ -17,8 +21,23 @@ class OvertimesController < ApplicationController
     )
     @ransack.sorts = "start_at asc" if @ransack.sorts.empty?
 
-    @overtimes = @ransack.result
-    @summary = @overtimes.sum(&:duration_minutes) / 60.0
+    filtered = @ransack.result
+    # The summary covers the whole filtered period, not just the visible page.
+    @summary = filtered.sum(&:duration_minutes) / 60.0
+    @pagy, @overtimes = pagy(filtered, limit: ITEMS_PER_PAGE)
+
+    respond_to do |format|
+      format.html
+      # Turbo form submissions accept turbo-stream, so redirect follows from
+      # create/update/destroy land here as TURBO_STREAM without a page param.
+      # Only the mobile infinite-scroll sentinel fetch (always ?page=N>1)
+      # should render the stream; anything else gets the regular HTML page.
+      format.turbo_stream do
+        # formats: :html alone keeps the turbo-stream content type, which
+        # would make Turbo process the whole page as a stream message.
+        render :index, formats: :html, content_type: :html unless infinite_scroll_request?
+      end
+    end
   end
 
   def show
@@ -67,6 +86,11 @@ class OvertimesController < ApplicationController
 
     def index_search_params
       params[:q]&.permit(:start_at_gteq, :start_at_lteq, :s)&.to_h || {}
+    end
+
+    # True for the mobile sentinel's next-page fetch (infinite_scroll_controller.js).
+    def infinite_scroll_request?
+      params[:page].to_i > 1
     end
 
     def filter_date(value)

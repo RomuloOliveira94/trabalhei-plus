@@ -28,3 +28,24 @@ from_bruno:
   start_at: <%= Time.zone.local(month_start.year, month_start.month, month_start.day, 22, 0, 0) %>
   end_at: <%= Time.zone.local(month_start.year, month_start.month, month_start.day, 23, 0, 0) %>
   description: "Plantão do Bruno"
+
+# Pagination fixtures: 25 kept records per user two months back, so the
+# default current-month filter (and the count-sensitive tests around it)
+# stay untouched while pagination tests get a stable 2-page data set
+# (20 + 5 records at 20 per page).
+<%
+  pagination_month = (Date.current << 2).beginning_of_month
+%>
+<% 1.upto(25) do |i| %>
+pagination_a<%= i %>:
+  user: one
+  start_at: <%= Time.zone.local(pagination_month.year, pagination_month.month, i, 18, 0, 0) %>
+  end_at: <%= Time.zone.local(pagination_month.year, pagination_month.month, i, 18, 30, 0) %>
+  description: "Registro de paginação A <%= format("%02d", i) %>"
+
+pagination_b<%= i %>:
+  user: two
+  start_at: <%= Time.zone.local(pagination_month.year, pagination_month.month, i, 19, 0, 0) %>
+  end_at: <%= Time.zone.local(pagination_month.year, pagination_month.month, i, 19, 30, 0) %>
+  description: "Registro de paginação B <%= format("%02d", i) %>"
+<% end %>

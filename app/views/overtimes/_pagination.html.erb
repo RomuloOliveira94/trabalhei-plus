@@ -1,0 +1,35 @@
+<%# Desktop pagination nav (hidden on mobile). Requires a local `pagy`
+    (Pagy::Offset). Current page: solid red; other pages: gray outline.
+    SPEC AC-9: Primeira / Anterior / páginas / Próxima / Última. %>
+<%
+  link_classes = "inline-flex h-9 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+  page_classes = "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+  disabled_classes = "inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-300"
+%>
+<nav aria-label="<%= t(".aria_label") %>" class="flex flex-wrap items-center justify-center gap-1.5">
+  <% if pagy.prev %>
+    <%= link_to t(".first"), pagy_url_for(pagy, 1), rel: "first", class: link_classes %>
+    <%= link_to t(".prev"), pagy_url_for(pagy, pagy.prev), rel: "prev", class: link_classes %>
+  <% else %>
+    <span aria-disabled="true" class="<%= disabled_classes %>"><%= t(".first") %></span>
+    <span aria-disabled="true" class="<%= disabled_classes %>"><%= t(".prev") %></span>
+  <% end %>
+
+  <% pagy.series.each do |item| %>
+    <% if item.is_a?(String) %> <%# Pagy marks the current page as a String %>
+      <span aria-current="page" class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-600 text-sm font-semibold text-white"><%= item %></span>
+    <% elsif item == :gap %>
+      <span class="inline-flex h-9 items-center px-2 text-sm text-gray-400"><%= t(".gap") %></span>
+    <% else %>
+      <%= link_to item, pagy_url_for(pagy, item), class: page_classes %>
+    <% end %>
+  <% end %>
+
+  <% if pagy.next %>
+    <%= link_to t(".next"), pagy_url_for(pagy, pagy.next), rel: "next", class: link_classes %>
+    <%= link_to t(".last"), pagy_url_for(pagy, pagy.last), rel: "last", class: link_classes %>
+  <% else %>
+    <span aria-disabled="true" class="<%= disabled_classes %>"><%= t(".next") %></span>
+    <span aria-disabled="true" class="<%= disabled_classes %>"><%= t(".last") %></span>
+  <% end %>
+</nav>
