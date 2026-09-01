@@ -6,7 +6,22 @@
         <%= t(".period", from: l(@filter_start_date), to: l(@filter_end_date)) %>
       </p>
     </div>
-    <%= link_to t(".new_overtime"), new_overtime_path, class: "inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700" %>
+    <div class="flex flex-wrap items-center gap-2">
+      <%# Download forms carry the active filter as plain from/to params.
+          data-turbo="false" is required so Turbo doesn't swallow the
+          file-download response. %>
+      <%= form_with url: export_overtimes_pdf_path, method: :get, data: { turbo: false } do %>
+        <%= hidden_field_tag :from, @filter_start_date %>
+        <%= hidden_field_tag :to, @filter_end_date %>
+        <%= submit_tag t(".export_pdf"), class: "inline-flex cursor-pointer items-center justify-center rounded-lg border border-red-600 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50" %>
+      <% end %>
+      <%= form_with url: export_overtimes_xlsx_path, method: :get, data: { turbo: false } do %>
+        <%= hidden_field_tag :from, @filter_start_date %>
+        <%= hidden_field_tag :to, @filter_end_date %>
+        <%= submit_tag t(".export_xlsx"), class: "inline-flex cursor-pointer items-center justify-center rounded-lg border border-red-600 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50" %>
+      <% end %>
+      <%= link_to t(".new_overtime"), new_overtime_path, class: "inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700" %>
+    </div>
   </div>
 
   <div class="mt-6 rounded-lg border border-gray-100 bg-gray-50 px-5 py-4">

@@ -7,6 +7,11 @@ Rails.application.routes.draw do
   # to their overtime list by HomeController (SPEC §3 "Dashboard / Index").
   root "home#show"
 
+  # Export endpoints must be declared before the `resources` block so
+  # `overtimes/export_pdf` is not swallowed by the `overtimes/:id` show route.
+  get "overtimes/export_pdf", to: "overtimes#export_pdf", as: :export_overtimes_pdf
+  get "overtimes/export_xlsx", to: "overtimes#export_xlsx", as: :export_overtimes_xlsx
+
   resources :overtimes
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

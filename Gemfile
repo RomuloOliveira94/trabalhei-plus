@@ -56,6 +56,14 @@ gem "ransack", "~> 4.3"
 gem "discard", "~> 1.4"
 # Pagination for the overtime list (buttons + infinite scroll) [https://github.com/ddnexus/pagy]
 gem "pagy", "~> 9.0"
+# PDF generation, pure Ruby, no Chrome [https://github.com/prawnpdf/prawn]
+gem "prawn", "~> 2.5"
+# Table support for Prawn [https://github.com/prawnpdf/prawn-table]
+gem "prawn-table", "~> 0.2"
+# Excel (.xlsx) generation [https://github.com/caxlsx/caxlsx]
+gem "caxlsx", "~> 4.0"
+# Rails integration for Caxlsx [https://github.com/caxlsx/caxlsx_rails]
+gem "caxlsx_rails", "~> 0.7"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

@@ -73,6 +73,19 @@ class OvertimesController < ApplicationController
     redirect_to overtimes_path, notice: t("overtimes.destroy.destroyed")
   end
 
+  # The export form captures the active Ransack filter as plain `from`/`to`
+  # query params, so these actions stay decoupled from `q[...]` internals.
+  # The service re-applies the same kept + chronological scoping as the index.
+  def export_pdf
+    report = Overtimes::Export::Pdf.new(current_user, from: export_params[:from], to: export_params[:to])
+    send_data report.render, filename: report.filename, type: report.content_type, disposition: "attachment"
+  end
+
+  def export_xlsx
+    report = Overtimes::Export::Excel.new(current_user, from: export_params[:from], to: export_params[:to])
+    send_data report.render, filename: report.filename, type: report.content_type, disposition: "attachment"
+  end
+
   private
     def set_overtime
       # Scoped through current_user: other users' records (kept or
@@ -82,6 +95,10 @@ class OvertimesController < ApplicationController
 
     def overtime_params
       params.expect(overtime: [ :start_at, :end_at, :description ])
+    end
+
+    def export_params
+      params.permit(:from, :to)
     end
 
     def index_search_params

@@ -14,10 +14,14 @@ pt-BR:
             end_at:
               after_start_at: "deve ser depois do início"
               minimum_duration: "deve ter duração de no mínimo %{count} minutos"
+  date:
+    formats:
+      short_date: "%d/%m/%Y"
   time:
     formats:
       short_date: "%d/%m/%Y"
       hours_minutes: "%H:%M"
+      short_datetime: "%d/%m/%Y %H:%M"
   layouts:
     application:
       app_name: "Trabalhei a Mais"
@@ -46,6 +50,26 @@ pt-BR:
       column_actions: "Ações"
       empty: "Nenhuma hora extra cadastrada neste período."
       empty_cta: "Cadastrar a primeira hora extra"
+      export_pdf: "Exportar PDF"
+      export_xlsx: "Exportar Excel"
+    export:
+      pdf_title: "Relatório de Horas Extras"
+      employee: "Funcionário: %{name}"
+      email: "E-mail: %{email}"
+      period: "Período: %{period}"
+      generated_at: "Gerado em: %{datetime}"
+      total: "Total de horas no período"
+      employee_label: "Funcionário"
+      email_label: "E-mail"
+      period_label: "Período"
+      total_label: "Total de Horas"
+      sheet_main: "Horas Extras"
+      sheet_summary: "Resumo"
+      column_date: "Data"
+      column_start: "Início"
+      column_end: "Fim"
+      column_duration: "Duração"
+      column_description: "Descrição"
     overtime_actions:
       edit: "Editar"
       delete: "Apagar"
