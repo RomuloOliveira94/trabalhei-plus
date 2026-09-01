@@ -3,7 +3,10 @@
 CI.run do
   step "Setup", "bin/setup --skip-server"
 
-  step "Style: Ruby", "bin/rubocop"
+  # --cache false: bin/setup clears tmp/ right before this step, and rubocop's
+  # parallel workers then race writing the shared cache (empty/truncated cache
+  # files crash ResultCache#load). Disabling the cache makes the step hermetic.
+  step "Style: Ruby", "bin/rubocop --cache false"
 
   step "Security: Gem audit", "bin/bundler-audit"
   step "Security: Importmap vulnerability audit", "bin/importmap audit"
