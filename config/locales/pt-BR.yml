@@ -147,6 +147,9 @@ pt-BR:
       updated: "Hora extra atualizada com sucesso."
     destroy:
       destroyed: "Hora extra apagada com sucesso."
+  shared:
+    flash:
+      close: "Fechar"
   errors:
     not_found:
       title: "Página não encontrada"

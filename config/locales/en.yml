@@ -149,6 +149,9 @@ en:
       updated: "Overtime updated successfully."
     destroy:
       destroyed: "Overtime deleted successfully."
+  shared:
+    flash:
+      close: "Close"
   errors:
     not_found:
       title: "Page not found"
