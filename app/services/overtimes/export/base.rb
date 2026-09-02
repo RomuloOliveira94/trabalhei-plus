@@ -71,13 +71,17 @@ module Overtimes
         ]
       end
 
+      # The description is capped at the model's own maximum. Validated records
+      # are already within it, so nothing is lost in practice; the guard exists
+      # for rows that bypassed validation, which could otherwise build a PDF
+      # table row taller than the page body.
       def row_for(overtime)
         [
           I18n.l(overtime.start_at, format: :short_date),
           I18n.l(overtime.start_at, format: :hours_minutes),
           I18n.l(overtime.end_at, format: :hours_minutes),
           overtime.duration_formatted_export,
-          overtime.description
+          overtime.description.to_s.truncate(Overtime::DESCRIPTION_MAX_LENGTH)
         ]
       end
 

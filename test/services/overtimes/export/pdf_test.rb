@@ -137,6 +137,21 @@ class Overtimes::Export::PdfTest < ActiveSupport::TestCase
     assert_not_includes descriptions, "Registro lançado por engano"
   end
 
+  test "an oversized description is capped so a row can never outgrow the page" do
+    # The model caps descriptions at 2000 chars, but data that skipped
+    # validation (imports, update_column) must not be able to build a table
+    # row taller than the page body. The cap lives in Export::Base#row_for so
+    # the PDF and the Excel export stay identical.
+    overtimes(:one).update_column(:description, "Palavra " * 375) # 3000 chars
+
+    report = build_report(users(:one))
+    row = report.row_for(report.overtimes.first)
+
+    assert_operator row.last.length, :<=, Overtime::DESCRIPTION_MAX_LENGTH
+    assert_nothing_raised { report.render }
+    assert report.render.start_with?("%PDF-")
+  end
+
   test "fixed column widths keep headers on one line and wrap long descriptions" do
     # 700-char description forces the description cell to wrap across lines.
     overtimes(:one).update!(description: ("Palavra " * 100).strip)

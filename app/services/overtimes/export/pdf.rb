@@ -14,6 +14,9 @@ module Overtimes
       FIXED_WIDTHS = [ 65, 50, 50, 60 ].freeze # Data, Início, Fim, Duração
       DESCRIPTION_WIDTH = ->(bounds) { bounds.width - FIXED_WIDTHS.sum }
 
+      # Floor for the shrink_to_fit overflow on the four narrow columns.
+      MIN_FONT_SIZE = 7
+
       # Prawn's built-in Helvetica uses WinAnsi encoding, which already maps
       # every pt-BR accented character (á é í ó ú â ê ô ã õ ç à) correctly. It
       # is a valid fallback, but it also emits a one-time m17n warning for any
@@ -50,13 +53,16 @@ module Overtimes
         doc.move_down 14
 
         # Grayscale report: light-gray header, gray borders, black text. The
-        # narrow columns are single_line so headers never wrap; the description
+        # narrow columns are single_line so headers never wrap; shrink_to_fit
+        # is the font-independent guard for the Helvetica fallback path (the
+        # prod image has no DejaVu, and Helvetica measures wider), scaling a
+        # cell down to MIN_FONT_SIZE rather than clipping it. The description
         # column keeps default wrapping and takes the remaining width.
         doc.table(table_rows(doc), header: true, width: doc.bounds.width, column_widths: column_widths(doc), cell_style: { size: 9, border_width: 0.5, border_color: "CCCCCC", text_color: "000000", padding: [ 6, 4, 6, 4 ] }) do
           row(0).font_style = :bold
           row(0).background_color = "E5E5E5"
           row(0).text_color = "000000"
-          cells.columns(0..3).style(single_line: true)
+          cells.columns(0..3).style(single_line: true, overflow: :shrink_to_fit, min_font_size: MIN_FONT_SIZE)
           cells.valign = :top
         end
 

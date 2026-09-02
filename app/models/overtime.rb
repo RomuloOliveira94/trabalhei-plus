@@ -11,8 +11,12 @@ class Overtime < ApplicationRecord
 
   belongs_to :user
 
+  # Shared by the model validation, the form's textarea maxlength and the
+  # export row builder, so all three agree on one limit.
+  DESCRIPTION_MAX_LENGTH = 2000
+
   validates :start_at, :end_at, presence: true
-  validates :description, presence: true, length: { maximum: 2000 }
+  validates :description, presence: true, length: { maximum: DESCRIPTION_MAX_LENGTH }
 
   validate :end_at_after_start_at
   validate :duration_at_least_5_minutes
