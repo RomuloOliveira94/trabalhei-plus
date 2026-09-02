@@ -1,0 +1,94 @@
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+# Only one deploy at a time; a second push queues behind the first instead of
+# racing it (CapRover applies deploys sequentially anyway, but this keeps the
+# Actions side honest too).
+concurrency:
+  group: caprover-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  # `main` is not branch-protected here — work lands straight on it, with no PR
+  # gate in front. What does run on every push to `main` is ci.yml, via its own
+  # `push: branches: [main]` trigger: the `test`, `system-test`, `lint`,
+  # `scan_ruby` and `scan_js` jobs, on the exact commit we're about to deploy.
+  # Rather than re-running (and duplicating) that whole 5-job matrix here, this
+  # job waits for that sibling run to finish and only proceeds if it succeeded —
+  # a cheap, read-only confirmation instead of a second, redundant test pass,
+  # and the only thing standing between a red commit and production.
+  wait_for_ci:
+    name: Wait for CI to pass on this commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Poll the CI workflow run for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          sha="${{ github.sha }}"
+          repo="${{ github.repository }}"
+          echo "Waiting for the CI workflow (ci.yml) to complete on ${sha}"
+
+          for attempt in $(seq 1 60); do
+            run_json=$(gh run list --repo "$repo" --workflow=ci.yml --commit="$sha" \
+              --json status,conclusion --jq '.[0] // empty')
+
+            if [ -z "$run_json" ]; then
+              echo "[$attempt/60] No CI run found yet for ${sha}, waiting..."
+              sleep 15
+              continue
+            fi
+
+            status=$(jq -r '.status' <<<"$run_json")
+            if [ "$status" != "completed" ]; then
+              echo "[$attempt/60] CI run status: ${status}, waiting..."
+              sleep 15
+              continue
+            fi
+
+            conclusion=$(jq -r '.conclusion' <<<"$run_json")
+            if [ "$conclusion" = "success" ]; then
+              echo "CI passed for ${sha}."
+              exit 0
+            fi
+
+            echo "CI concluded '${conclusion}' for ${sha} — refusing to deploy."
+            exit 1
+          done
+
+          echo "Timed out waiting for CI to complete on ${sha}."
+          exit 1
+
+  deploy:
+    name: Deploy to CapRover
+    needs: wait_for_ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      # Tarball method (caprover/deploy-from-github v1.0.1): pack the repo
+      # plus captain-definition into ./deploy.tar and hand it to the action,
+      # which uploads it to CapRover for a server-side `docker build` from
+      # the Dockerfile. No Node/npm step — this app has no package.json
+      # (Importmap + tailwindcss-rails), so there's nothing to build here.
+      - name: Build deployment tarball
+        run: tar -cf deploy.tar --exclude='.git' --exclude='deploy.tar' .
+
+      - name: Deploy to CapRover
+        uses: caprover/deploy-from-github@v1.0.1
+        with:
+          server: '${{ secrets.CAPROVER_SERVER }}'
+          app: '${{ secrets.CAPROVER_APP_NAME }}'
+          token: '${{ secrets.CAPROVER_APP_TOKEN }}'
