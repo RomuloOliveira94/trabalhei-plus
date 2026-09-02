@@ -173,7 +173,11 @@ O app usa SQLite para o banco principal **e** para Solid Queue, Solid Cache e So
 
 | Caminho no container | Rótulo (label) |
 |---|---|
-| `/rails/storage` | ex.: `trabalheiamais-storage` |
+| `/rails/storage` | `trabalhei-plus-db` |
+
+⚠️ **O rótulo precisa ser único em toda a instância do CapRover.** O CapRover converte o rótulo no volume Docker `captain--<rótulo>` **sem prefixar o nome do app**, então todos os apps da mesma instância dividem esse namespace. Um rótulo genérico como `db` ou `storage` monta em `/rails/storage` o volume `captain--db`, que provavelmente já é de outro app: o `db:prepare` do boot encontra um banco alheio já inicializado, tenta rodar as migrations desta app em cima dele e morre com `SQLite3::SQLException: table "users" already exists`, deixando o container em crash loop. Se não houvesse colisão de nomes de tabela seria pior — as migrations desta app seriam aplicadas no banco do outro app. Por isso o rótulo em uso aqui é `trabalhei-plus-db`.
+
+Se isso já tiver acontecido, troque o rótulo por um único: o CapRover passa a montar um volume novo e vazio e o `db:prepare` cria os bancos desta app do zero. No volume compartilhado ficam para trás os `production_queue.sqlite3`, `production_cache.sqlite3` e `production_cable.sqlite3` que esta app criou — remova-os se o outro app não usar esses nomes.
 
 O `bin/docker-entrypoint` roda `db:prepare` a cada boot, então o primeiro deploy cria e migra os quatro bancos sozinho.
 
