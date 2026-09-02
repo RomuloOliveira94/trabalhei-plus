@@ -8,6 +8,8 @@ on:
 # Only one deploy at a time; a second push queues behind the first instead of
 # racing it (CapRover applies deploys sequentially anyway, but this keeps the
 # Actions side honest too).
+# GitHub keeps at most one *pending* run per group, so on rapid successive
+# pushes the middle run is cancelled (shows red) and the newest SHA deploys.
 concurrency:
   group: caprover-deploy
   cancel-in-progress: false
@@ -40,8 +42,11 @@ jobs:
           echo "Waiting for the CI workflow (ci.yml) to complete on ${sha}"
 
           for attempt in $(seq 1 60); do
+            # `|| true` keeps a transient gh/API failure (5xx, rate limit) from
+            # aborting the whole gate under `set -e`: run_json comes back empty
+            # and this poll falls into the "no run found yet" branch below.
             run_json=$(gh run list --repo "$repo" --workflow=ci.yml --commit="$sha" \
-              --json status,conclusion --jq '.[0] // empty')
+              --json status,conclusion --jq '.[0] // empty') || true
 
             if [ -z "$run_json" ]; then
               echo "[$attempt/60] No CI run found yet for ${sha}, waiting..."

@@ -28,17 +28,17 @@ No node, no esbuild, no Shakapacker. **No Sidekiq/Redis** — Solid Queue (runs 
 - `bin/ci` — local CI gate (setup + rubocop + brakeman + bundler-audit + importmap audit + tests + db:seed:replant). Sources `config/ci.rb`.
 - Security scans: `bin/brakeman --no-pager`, `bin/bundler-audit`, `bin/importmap audit`.
 - `bin/rails console` / `bin/jobs` (Solid Queue supervisor).
-- `bin/kamal console|shell|logs|dbc` — prod access via Kamal.
+- Prod access — CapRover dashboard (**App Logs**), or on the CapRover host `docker exec -it $(docker ps -qf name=srv-captain--<app>) bin/rails console` (`bin/rails dbconsole`/`bash` likewise). `bin/kamal console|shell|logs|dbc` only reaches a Kamal-managed deploy, not these containers.
 
 ## Gotchas
 
 - **Root route** — `/` renders the sign-in page for guests (login IS the landing) and the overtime list for signed-in users, via Devise `authenticated :user do root ... end` + a `devise_scope :user` root (see `config/routes.rb`). The unauthenticated root must live inside `devise_scope` so Devise resolves the user mapping.
-- **Prod Solid Queue runs inside Puma** (`SOLID_QUEUE_IN_PUMA=true` in `config/deploy.yml`). Do not add a separate worker process.
+- **Prod Solid Queue runs inside Puma** (`SOLID_QUEUE_IN_PUMA=true` in `config/deploy.yml`, and set the same env var on CapRover). Do not add a separate worker process.
 - Tests use **fixtures** (minitest), no FactoryBot. Parallel workers, `fixtures :all` in `test/test_helper.rb`.
 - `bin/setup` auto-launches dev server unless `--skip-server` is passed.
 - Secrets via Rails credentials — `config/master.key` is gitignored. Never commit.
-- **CD is CapRover, not Kamal** — `.github/workflows/cd.yml` deploys on every push to `main`, but only after polling `ci.yml` for the same SHA and seeing it green (`main` is not branch-protected, so that poll is the only gate). `captain-definition` points CapRover at the `Dockerfile`. Kamal stays for manual deploys and prod access (`bin/kamal console|shell|logs|dbc`), and its `config/deploy.yml` is still placeholder (server `192.168.0.1`, registry `localhost:5555`) — override before using it.
-- **CapRover essentials** — repo secrets `CAPROVER_SERVER`, `CAPROVER_APP_NAME`, `CAPROVER_APP_TOKEN` (App Token from the app's Deployment tab). App env: `RAILS_MASTER_KEY` (mandatory), `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` (read from `ENV` in `config/initializers/devise.rb`, *not* credentials), `SOLID_QUEUE_IN_PUMA=true` once jobs exist. Persistent directory `/rails/storage` is mandatory — all four SQLite files live there and every deploy wipes them without it. Health check `/up`, port 80 (Thruster), TLS terminated by CapRover's nginx with `force_ssl`/`assume_ssl` left commented out in `config/environments/production.rb`.
+- **CD is CapRover, not Kamal** — `.github/workflows/cd.yml` deploys on every push to `main`, but only after polling `ci.yml` for the same SHA and seeing it green (`main` is not branch-protected, so that poll is the only gate). `captain-definition` points CapRover at the `Dockerfile`. Kamal stays only for a separate, Kamal-managed deploy: its `bin/kamal console|shell|logs|dbc` aliases find Kamal-published containers, **not** CapRover's (`srv-captain--<app>`), so they are not the way into this production. `config/deploy.yml` is still placeholder (server `192.168.0.1`, registry `localhost:5555`) — override before using it.
+- **CapRover essentials** — repo secrets `CAPROVER_SERVER`, `CAPROVER_APP_NAME`, `CAPROVER_APP_TOKEN` (App Token from the app's Deployment tab). App env: `RAILS_MASTER_KEY` (mandatory), `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` (read from `ENV` in `config/initializers/devise.rb`, *not* credentials), `SOLID_QUEUE_IN_PUMA=true` from day one (prod runs Solid Queue inside Puma; without it any future `deliver_later`/`perform_later` is enqueued and never runs). Persistent directory `/rails/storage` is mandatory — all four SQLite files live there and every deploy wipes them without it. Health check `/up`, port 80 (Thruster), TLS terminated by CapRover's nginx with `force_ssl`/`assume_ssl` left commented out in `config/environments/production.rb`.
 - Dockerfile uses Thruster on :80, entrypoint runs `db:prepare` on boot. Non-root user 1000, jemalloc enabled. The runtime stage installs **`fonts-dejavu-core`** — `Overtimes::Export::Pdf` looks for `DejaVuSans.ttf`/`DejaVuSans-Bold.ttf` under `/usr/share/fonts/truetype/dejavu/` and silently degrades to Prawn's Helvetica (plus an m17n warning per export) if they're missing. Don't drop it.
 - i18n: default locale is **pt-BR**, `available_locales` is `[:"pt-BR", :en]` and `fallbacks` is pinned to `[ :en ]`; timezone is **America/Sao_Paulo** (all set in `config/application.rb`).
 - **Devise pt-BR comes from the `devise-i18n` gem** — don't hand-write a `devise.pt-BR.yml`. Only the gaps it ships as nil (`devise.shared.minimum_password_length`, `errors.messages.not_saved`) plus app-specific keys live in `config/locales/pt-BR.yml`. The gem's `en` locale covers stock Devise, so there is no `devise.en.yml`.
@@ -50,7 +50,7 @@ No node, no esbuild, no Shakapacker. **No Sidekiq/Redis** — Solid Queue (runs 
 
 ## Testing
 
-Minitest only (no RSpec). Standard Rails layout under `test/` (all dirs empty `.keep` so far).
+Minitest only (no RSpec). Standard Rails layout under `test/`: `test/models`, `test/integration`, `test/system`, `test/services/overtimes/export`, `test/i18n` (fixtures in `test/fixtures`).
 
 - Unit/integration: `bin/rails db:test:prepare test`
 - System: `bin/rails db:test:prepare test:system` — requires headless Chrome (not bundled; CI uses GH Actions setup).
@@ -76,4 +76,4 @@ Stimulus controllers (`confirm_modal`, `dialog_modal`, `infinite_scroll`) alread
 ## Git + deploy
 
 - Host: GitHub, `RomuloOliveira94/trabalhei-plus`. Work goes **straight to `main`** — no branch/PR flow, no branch protection. Commit locally; the user pushes.
-- Deployment target: **CapRover**, via `.github/workflows/cd.yml` (see Gotchas). Kamal's `config/deploy.yml` is kept for manual use and still needs a real server + registry before it works.
+- Deployment target: **CapRover**, via `.github/workflows/cd.yml` (see Gotchas). Prod access goes through CapRover (App Logs / `docker exec` on the host — see Commands). Kamal's `config/deploy.yml` is kept for a separate Kamal-managed deploy and still needs a real server + registry before it works.

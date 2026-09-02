@@ -129,7 +129,7 @@ Em **App Configs** → **Environmental Variables**, configure:
 | `RAILS_MASTER_KEY` | **Sim** | Decripta `config/credentials.yml.enc` em runtime (é o mesmo valor de `config/master.key`, que não está no repositório). Sem ela o container sobe e derruba na inicialização. |
 | `GOOGLE_CLIENT_ID` | Para o "Entrar com Google" | Lida de `ENV` em `config/initializers/devise.rb` (**não** das credentials). Em branco, o botão aparece mas o fluxo OAuth falha; o login por e-mail/senha continua funcionando. |
 | `GOOGLE_CLIENT_SECRET` | Para o "Entrar com Google" | Idem — par do `GOOGLE_CLIENT_ID` (veja `.env.example`). |
-| `SOLID_QUEUE_IN_PUMA` | Não (hoje) | Sobe o supervisor do Solid Queue dentro do Puma (`config/puma.rb`). O app ainda não enfileira nenhum job; defina como `true` quando o primeiro job entrar, para espelhar o que o `config/deploy.yml` do Kamal já faz. |
+| `SOLID_QUEUE_IN_PUMA` | **Sim** | Defina como `true` desde o primeiro deploy. Sobe o supervisor do Solid Queue dentro do Puma (`config/puma.rb`) — é assim que esta app roda jobs em produção, sem processo worker separado (o `config/deploy.yml` já define `true`). Sem ela, qualquer `deliver_later`/`perform_later` que venha a existir fica enfileirado e nunca executa. |
 | `RAILS_LOG_LEVEL` | Não | Padrão `info` (`config/environments/production.rb`). |
 
 ### Volume persistente (obrigatório)
@@ -152,9 +152,16 @@ Configure o health check do CapRover para consultar `/up` — a rota padrão do 
 
 O `Dockerfile` expõe a porta `80` (`EXPOSE 80`, servida pelo Thruster), que já é o padrão do CapRover — nenhuma configuração extra de porta é necessária. O CapRover termina o TLS no próprio Nginx e encaminha HTTP simples para o container; como `config.force_ssl` e `config.assume_ssl` seguem comentados em `config/environments/production.rb`, isso não causa loop de redirecionamento. Se um dos dois for ativado no futuro, o outro precisa ser ativado junto.
 
+### Acesso à produção
+
+A produção roda no CapRover, então o acesso ao app passa por ele:
+
+- **Logs**: painel do CapRover → o app → aba **App Logs**.
+- **Console / shell**: no host do CapRover, `docker exec -it $(docker ps -qf name=srv-captain--<app>) bin/rails console` (troque `<app>` pelo nome do app; use `bin/rails dbconsole` ou `bash` no lugar de `bin/rails console` conforme a necessidade).
+
 ### Deploy manual (Kamal)
 
-O Kamal continua no `Gemfile` e o `config/deploy.yml` segue versionado para deploys manuais e para os comandos de acesso à produção (`bin/kamal console|shell|logs|dbc`). Os valores de servidor e registry ainda são placeholders — ajuste antes de usar.
+O Kamal continua no `Gemfile` e o `config/deploy.yml` segue versionado para um deploy gerenciado pelo próprio Kamal, separado do CapRover. Os valores de servidor e registry ainda são placeholders — ajuste antes de usar. Os comandos `bin/kamal console|shell|logs|dbc` só enxergam containers publicados pelo Kamal; eles **não** alcançam o deploy do CapRover, cujos containers se chamam `srv-captain--<app>`.
 
 ## 📄 Licença
 
