@@ -37,8 +37,9 @@ No node, no esbuild, no Shakapacker. **No Sidekiq/Redis** — Solid Queue (runs 
 - Tests use **fixtures** (minitest), no FactoryBot. Parallel workers, `fixtures :all` in `test/test_helper.rb`.
 - `bin/setup` auto-launches dev server unless `--skip-server` is passed.
 - Secrets via Rails credentials — `config/master.key` is gitignored. Never commit.
-- **Kamal deploy config is placeholder** (`config/deploy.yml`: server `192.168.0.1`, registry `localhost:5555`). Override before first deploy. Volume `trabalheiamais_storage:/rails/storage`.
-- Dockerfile uses Thruster on :80, entrypoint runs `db:prepare` on boot. Non-root user 1000, jemalloc enabled.
+- **CD is CapRover, not Kamal** — `.github/workflows/cd.yml` deploys on every push to `main`, but only after polling `ci.yml` for the same SHA and seeing it green (`main` is not branch-protected, so that poll is the only gate). `captain-definition` points CapRover at the `Dockerfile`. Kamal stays for manual deploys and prod access (`bin/kamal console|shell|logs|dbc`), and its `config/deploy.yml` is still placeholder (server `192.168.0.1`, registry `localhost:5555`) — override before using it.
+- **CapRover essentials** — repo secrets `CAPROVER_SERVER`, `CAPROVER_APP_NAME`, `CAPROVER_APP_TOKEN` (App Token from the app's Deployment tab). App env: `RAILS_MASTER_KEY` (mandatory), `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` (read from `ENV` in `config/initializers/devise.rb`, *not* credentials), `SOLID_QUEUE_IN_PUMA=true` once jobs exist. Persistent directory `/rails/storage` is mandatory — all four SQLite files live there and every deploy wipes them without it. Health check `/up`, port 80 (Thruster), TLS terminated by CapRover's nginx with `force_ssl`/`assume_ssl` left commented out in `config/environments/production.rb`.
+- Dockerfile uses Thruster on :80, entrypoint runs `db:prepare` on boot. Non-root user 1000, jemalloc enabled. The runtime stage installs **`fonts-dejavu-core`** — `Overtimes::Export::Pdf` looks for `DejaVuSans.ttf`/`DejaVuSans-Bold.ttf` under `/usr/share/fonts/truetype/dejavu/` and silently degrades to Prawn's Helvetica (plus an m17n warning per export) if they're missing. Don't drop it.
 - i18n: default locale is **pt-BR**, `available_locales` is `[:"pt-BR", :en]` and `fallbacks` is pinned to `[ :en ]`; timezone is **America/Sao_Paulo** (all set in `config/application.rb`).
 - **Devise pt-BR comes from the `devise-i18n` gem** — don't hand-write a `devise.pt-BR.yml`. Only the gaps it ships as nil (`devise.shared.minimum_password_length`, `errors.messages.not_saved`) plus app-specific keys live in `config/locales/pt-BR.yml`. The gem's `en` locale covers stock Devise, so there is no `devise.en.yml`.
 - **`configure_permitted_parameters` lives in `ApplicationController`** (guarded by `if: :devise_controller?`) and permits `:name` for `:sign_up` and `:account_update`. Any new User attribute exposed through a Devise form must be added there or Devise silently strips it.
@@ -72,7 +73,7 @@ Partial and locale-key names must be self-explanatory — no abbreviations or ge
 
 Stimulus controllers (`confirm_modal`, `dialog_modal`, `infinite_scroll`) already describe their action — keep. Auth pages share `devise/shared/_auth_card.html.erb`; relative i18n keys inside `render "partial" do ... end` blocks resolve against the partial path, so use absolute keys there.
 
-## Open questions (ask before building)
+## Git + deploy
 
-- Git host + branch/PR/release conventions — none configured yet.
-- Deployment target (Kamal placeholder needs real server + registry).
+- Host: GitHub, `RomuloOliveira94/trabalhei-plus`. Work goes **straight to `main`** — no branch/PR flow, no branch protection. Commit locally; the user pushes.
+- Deployment target: **CapRover**, via `.github/workflows/cd.yml` (see Gotchas). Kamal's `config/deploy.yml` is kept for manual use and still needs a real server + registry before it works.

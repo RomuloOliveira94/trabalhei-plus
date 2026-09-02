@@ -49,7 +49,7 @@ Sem Node, sem Redis — Rails 8.1 com SQLite e importmap mantém o setup local e
 | Assets JS | Importmap (sem Node/Webpack) |
 | CSS | Tailwind CSS |
 | Testes | Minitest + Capybara (headless Chrome) |
-| Deploy | [Kamal](https://kamal-deploy.org/) |
+| Deploy | CD no [CapRover](https://caprover.com/) via GitHub Actions ([Kamal](https://kamal-deploy.org/) para deploy manual) |
 
 ## 🚀 Como rodar localmente
 
@@ -103,6 +103,58 @@ bin/ci                                # gate completo (lint + segurança + teste
    ```
 
 5. Abra um **Pull Request** descrevendo o que mudou e por quê.
+
+## 🚢 Deploy
+
+O deploy contínuo para produção roda no [CapRover](https://caprover.com/), disparado a cada push em `main` (`.github/workflows/cd.yml`). Como aqui o trabalho vai direto para a `main` (sem fluxo de PR e sem branch protection), o gate é o próprio workflow: ele só implanta depois de confirmar que o CI (`.github/workflows/ci.yml`) passou **na mesma revisão** — os 5 jobs (`test`, `system-test`, `lint`, `scan_ruby`, `scan_js`) nunca são pulados nem duplicados, só aguardados. Também dá para disparar um redeploy manual pela aba Actions (`workflow_dispatch`). O `captain-definition` na raiz do repositório aponta o CapRover para o `Dockerfile` existente.
+
+### Segredos do GitHub Actions
+
+Configure em Settings → Secrets and variables → Actions do repositório (nenhum destes vive no código):
+
+| Secret | Valor |
+|---|---|
+| `CAPROVER_SERVER` | URL do servidor CapRover, ex.: `https://captain.apps.seu-dominio.com` |
+| `CAPROVER_APP_NAME` | Nome do app cadastrado no CapRover |
+| `CAPROVER_APP_TOKEN` | Token de deploy do app |
+
+Para gerar o token: na aba **Deployment** do app no painel do CapRover, clique em **Enable App Token** e copie o valor gerado.
+
+### Variáveis de ambiente do app no CapRover
+
+Em **App Configs** → **Environmental Variables**, configure:
+
+| Variável | Obrigatória? | Para quê |
+|---|---|---|
+| `RAILS_MASTER_KEY` | **Sim** | Decripta `config/credentials.yml.enc` em runtime (é o mesmo valor de `config/master.key`, que não está no repositório). Sem ela o container sobe e derruba na inicialização. |
+| `GOOGLE_CLIENT_ID` | Para o "Entrar com Google" | Lida de `ENV` em `config/initializers/devise.rb` (**não** das credentials). Em branco, o botão aparece mas o fluxo OAuth falha; o login por e-mail/senha continua funcionando. |
+| `GOOGLE_CLIENT_SECRET` | Para o "Entrar com Google" | Idem — par do `GOOGLE_CLIENT_ID` (veja `.env.example`). |
+| `SOLID_QUEUE_IN_PUMA` | Não (hoje) | Sobe o supervisor do Solid Queue dentro do Puma (`config/puma.rb`). O app ainda não enfileira nenhum job; defina como `true` quando o primeiro job entrar, para espelhar o que o `config/deploy.yml` do Kamal já faz. |
+| `RAILS_LOG_LEVEL` | Não | Padrão `info` (`config/environments/production.rb`). |
+
+### Volume persistente (obrigatório)
+
+O app usa SQLite para o banco principal **e** para Solid Queue, Solid Cache e Solid Cable (veja `config/database.yml`) — os quatro arquivos `.sqlite3` ficam em `storage/`, o que resolve para `/rails/storage` dentro do container (`WORKDIR /rails` no `Dockerfile`).
+
+**Sem um volume persistente mapeado em `/rails/storage`, cada deploy apaga todos os usuários e todas as horas extras cadastradas.** Configure em **App Configs** → **Persistent Directories**:
+
+| Caminho no container | Rótulo (label) |
+|---|---|
+| `/rails/storage` | ex.: `trabalheiamais-storage` |
+
+O `bin/docker-entrypoint` roda `db:prepare` a cada boot, então o primeiro deploy cria e migra os quatro bancos sozinho.
+
+### Health check
+
+Configure o health check do CapRover para consultar `/up` — a rota padrão do Rails 8 (`rails/health#show`), já registrada em `config/routes.rb`.
+
+### Porta e TLS
+
+O `Dockerfile` expõe a porta `80` (`EXPOSE 80`, servida pelo Thruster), que já é o padrão do CapRover — nenhuma configuração extra de porta é necessária. O CapRover termina o TLS no próprio Nginx e encaminha HTTP simples para o container; como `config.force_ssl` e `config.assume_ssl` seguem comentados em `config/environments/production.rb`, isso não causa loop de redirecionamento. Se um dos dois for ativado no futuro, o outro precisa ser ativado junto.
+
+### Deploy manual (Kamal)
+
+O Kamal continua no `Gemfile` e o `config/deploy.yml` segue versionado para deploys manuais e para os comandos de acesso à produção (`bin/kamal console|shell|logs|dbc`). Os valores de servidor e registry ainda são placeholders — ajuste antes de usar.
 
 ## 📄 Licença
 
