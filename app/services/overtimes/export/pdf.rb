@@ -7,6 +7,13 @@ module Overtimes
       DEJAVU_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
       DEJAVU_BOLD_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
+      # Fixed column widths (Prawn points) for the four narrow columns. The
+      # description column takes whatever remains of the usable width, so long
+      # text wraps inside it instead of squeezing the date/time columns (which
+      # would break headers like "Início" and dates like "01/09/2026").
+      FIXED_WIDTHS = [ 65, 50, 50, 60 ].freeze # Data, Início, Fim, Duração
+      DESCRIPTION_WIDTH = ->(bounds) { bounds.width - FIXED_WIDTHS.sum }
+
       # Prawn's built-in Helvetica uses WinAnsi encoding, which already maps
       # every pt-BR accented character (á é í ó ú â ê ô ã õ ç à) correctly. It
       # is a valid fallback, but it also emits a one-time m17n warning for any
@@ -42,11 +49,15 @@ module Overtimes
         doc.text I18n.t("overtimes.export.generated_at", datetime: generated_at), size: 9, color: "666666", align: :right
         doc.move_down 14
 
-        doc.table(table_rows(doc), header: true, width: doc.bounds.width, row_colors: %w[FFFFFF F5F5F5], cell_style: { size: 9, border_width: 0.5 }) do
+        # Grayscale report: light-gray header, gray borders, black text. The
+        # narrow columns are single_line so headers never wrap; the description
+        # column keeps default wrapping and takes the remaining width.
+        doc.table(table_rows(doc), header: true, width: doc.bounds.width, column_widths: column_widths(doc), cell_style: { size: 9, border_width: 0.5, border_color: "CCCCCC", text_color: "000000", padding: [ 6, 4, 6, 4 ] }) do
           row(0).font_style = :bold
-          row(0).background_color = "DC2626"
-          row(0).text_color = "FFFFFF"
-          cells.padding = [ 6, 8, 6, 8 ]
+          row(0).background_color = "E5E5E5"
+          row(0).text_color = "000000"
+          cells.columns(0..3).style(single_line: true)
+          cells.valign = :top
         end
 
         doc.render
@@ -70,6 +81,10 @@ module Overtimes
 
         def generated_at
           I18n.l(Time.current, format: :short_datetime)
+        end
+
+        def column_widths(doc)
+          [ *FIXED_WIDTHS, DESCRIPTION_WIDTH.call(doc.bounds) ]
         end
 
         def table_rows(doc)
