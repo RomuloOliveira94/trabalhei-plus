@@ -45,6 +45,7 @@ en:
       skip_to_content: "Skip to content"
       sign_in: "Sign in"
       sign_out: "Sign out"
+      my_account: "My account"
   devise:
     shared:
       minimum_password_length:

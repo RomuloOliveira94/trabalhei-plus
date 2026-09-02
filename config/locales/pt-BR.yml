@@ -37,6 +37,7 @@ pt-BR:
       skip_to_content: "Pular para o conteúdo"
       sign_in: "Entrar"
       sign_out: "Sair"
+      my_account: "Minha conta"
   devise:
     # devise-i18n 1.16 ships pt-BR with these two keys present but nil, so
     # they have to be filled in here or the views render "translation missing".

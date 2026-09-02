@@ -98,6 +98,14 @@ class AuthTest < ActionDispatch::IntegrationTest
     assert_select "a", "Cadastre-se"
   end
 
+  test "the header menu links a signed-in user to their account settings" do
+    sign_in users(:one)
+    get overtimes_path
+
+    assert_response :success
+    assert_select "a[href=?]", edit_user_registration_path, text: "Minha conta"
+  end
+
   test "signs out" do
     sign_in users(:one)
     delete destroy_user_session_path

@@ -39,7 +39,9 @@ No node, no esbuild, no Shakapacker. **No Sidekiq/Redis** — Solid Queue (runs 
 - Secrets via Rails credentials — `config/master.key` is gitignored. Never commit.
 - **Kamal deploy config is placeholder** (`config/deploy.yml`: server `192.168.0.1`, registry `localhost:5555`). Override before first deploy. Volume `trabalheiamais_storage:/rails/storage`.
 - Dockerfile uses Thruster on :80, entrypoint runs `db:prepare` on boot. Non-root user 1000, jemalloc enabled.
-- i18n only `en`; timezone default UTC (both commented in `config/application.rb`).
+- i18n: default locale is **pt-BR**, `available_locales` is `[:"pt-BR", :en]` and `fallbacks` is pinned to `[ :en ]`; timezone is **America/Sao_Paulo** (all set in `config/application.rb`).
+- **Devise pt-BR comes from the `devise-i18n` gem** — don't hand-write a `devise.pt-BR.yml`. Only the gaps it ships as nil (`devise.shared.minimum_password_length`, `errors.messages.not_saved`) plus app-specific keys live in `config/locales/pt-BR.yml`. The gem's `en` locale covers stock Devise, so there is no `devise.en.yml`.
+- **`configure_permitted_parameters` lives in `ApplicationController`** (guarded by `if: :devise_controller?`) and permits `:name` for `:sign_up` and `:account_update`. Any new User attribute exposed through a Devise form must be added there or Devise silently strips it.
 - `config/bundler-audit.yml` has placeholder `CVE-THAT-DOES-NOT-APPLY` ignore — clean up later.
 - CI: `.github/workflows/ci.yml` runs lint, brakeman, bundler-audit, importmap audit, tests, system tests (screenshot artifact on failure). Dependabot weekly for bundler + github-actions.
 - Redis/Valkey service blocks in CI are commented out — don't re-enable, Solid * is the stack.
