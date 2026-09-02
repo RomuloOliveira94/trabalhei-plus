@@ -51,6 +51,11 @@ en:
       minimum_password_length:
         one: "(%{count} character minimum)"
         other: "(%{count} characters minimum)"
+    omniauth_callbacks:
+      # App-specific key raised by OmniAuth::EmailNotVerified (see
+      # Users::OmniauthCallbacksController). Devise ships `success`/`failure`
+      # in its own :en locale, but not this one.
+      email_not_verified: "Could not sign you in from %{kind} because the Google account e-mail is not verified."
     sessions:
       new:
         sign_in: "Sign in"

@@ -175,8 +175,11 @@ class Overtimes::Export::PdfTest < ActiveSupport::TestCase
     refute_includes header_texts, "Duraç"
 
     # The body date must also stay on one line (the original bug: "01/09/20\n26").
+    # Computed from the record itself (same call as Export::Base#row_for) so the
+    # assertion does not rot once the calendar leaves the month it was written in.
+    expected_date = I18n.l(overtimes(:one).start_at, format: :short_date)
     body_texts = geometry[:runs].select { |r| r[:y] < 682 && r[:y] > 560 }.map { |r| r[:text] }
-    assert_includes body_texts, "01/09/2026"
+    assert_includes body_texts, expected_date
 
     # Description wraps: multiple runs in the description column (x > 265),
     # below the header, above the total row.
