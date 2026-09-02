@@ -1,16 +1,9 @@
 # Files in the config/locales directory are used for internationalization
 # and are automatically loaded by Rails. The default locale for this app is
-# pt-BR (see config/application.rb); this file remains as the English fallback.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
+# pt-BR (see config/application.rb); this file remains as the English fallback,
+# and `config.i18n.fallbacks = [ :en ]` means every key here has to mirror
+# pt-BR.yml exactly -- see test/i18n/locale_parity_test.rb.
 en:
-  hello: "Hello world"
   activerecord:
     models:
       user:
@@ -33,10 +26,14 @@ en:
             end_at:
               after_start_at: "must be after the start"
               minimum_duration: "must last at least %{count} minutes"
+  date:
+    formats:
+      short_date: "%m/%d/%Y"
   time:
     formats:
-      short_date: "%d/%m/%Y"
+      short_date: "%m/%d/%Y"
       hours_minutes: "%H:%M"
+      short_datetime: "%m/%d/%Y %H:%M"
   layouts:
     application:
       app_name: "Trabalhei +"
@@ -52,9 +49,12 @@ en:
         one: "(%{count} character minimum)"
         other: "(%{count} characters minimum)"
     omniauth_callbacks:
-      # App-specific key raised by OmniAuth::EmailNotVerified (see
-      # Users::OmniauthCallbacksController). Devise ships `success`/`failure`
-      # in its own :en locale, but not this one.
+      # `success`/`failure` restate devise-i18n's own wording so the pair stays
+      # in step with the custom pt-BR copy; `email_not_verified` is app-specific
+      # (raised by OmniAuth::EmailNotVerified, see Users::OmniauthCallbacksController)
+      # and ships in neither locale of the gem.
+      success: "Successfully authenticated from your %{kind} account."
+      failure: "Could not authenticate you via %{kind}: %{reason}."
       email_not_verified: "Could not sign you in from %{kind} because the Google account e-mail is not verified."
     sessions:
       new:
@@ -91,6 +91,8 @@ en:
       title: "Are you sure?"
       confirm: "Delete"
       cancel: "Cancel"
+    dialog_modal:
+      close: "Close"
   overtimes:
     index:
       title: "My overtime"
