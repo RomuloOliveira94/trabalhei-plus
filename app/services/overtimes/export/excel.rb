@@ -3,6 +3,10 @@ module Overtimes
     class Excel < Base
       require "caxlsx"
 
+      # Fixed column widths (characters) matching the PDF's column order. The
+      # description gets the widest one because its cells wrap.
+      COLUMN_WIDTHS = [ 12, 8, 8, 12, 60 ].freeze
+
       # Builds the workbook and returns the raw .xlsx binary. Kept here (rather
       # than a caxlsx_rails view template) so the service is directly unit-
       # testable per SPEC §8 and can be handed to `send_data` like the PDF.
@@ -33,13 +37,22 @@ module Overtimes
 
         def add_main_sheet(sheet)
           header_style = sheet.styles.add_style(b: true, border: { style: :thin, color: "999999" })
+          description_style = sheet.styles.add_style(alignment: { wrap_text: true, vertical: :top })
           total_style = sheet.styles.add_style(b: true)
+          # Only the description column wraps; the others are single values.
+          body_styles = [ nil, nil, nil, nil, description_style ]
 
           sheet.add_row column_labels, style: header_style
-          overtimes.each { |overtime| sheet.add_row row_for(overtime) }
-          sheet.add_row [ I18n.t("overtimes.export.total"), formatted_total ], style: total_style
+          overtimes.each { |overtime| sheet.add_row row_for(overtime), style: body_styles }
+          sheet.add_row total_row, style: total_style
 
-          sheet.column_widths 12, 8, 8, 12, 60
+          sheet.column_widths(*COLUMN_WIDTHS)
+        end
+
+        # Padded to the full column count so the value lands in the last column
+        # like the PDF footer, instead of in column B under "Início".
+        def total_row
+          [ I18n.t("overtimes.export.total"), nil, nil, nil, formatted_total ]
         end
 
         def add_summary_sheet(sheet)

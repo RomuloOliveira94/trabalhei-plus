@@ -5,6 +5,31 @@ class Overtimes::Export::ExcelTest < ActiveSupport::TestCase
     Overtimes::Export::Excel.new(user, from: from, to: to)
   end
 
+  def zip_entry(binary, name)
+    entry = nil
+    Zip::File.open_buffer(binary) do |zip|
+      entry = zip.get_entry(name).get_input_stream.read.force_encoding(Encoding::UTF_8)
+    end
+    entry
+  end
+
+  # caxlsx writes cell text inline (`t="inlineStr"`), so the sheet XML alone is
+  # enough to assert on positions. Returns one array of [ column, text ] pairs
+  # per row, e.g. [ [ "A", "Data" ], [ "B", "Início" ], ... ].
+  def sheet_cells(binary, sheet: 1)
+    zip_entry(binary, "xl/worksheets/sheet#{sheet}.xml").scan(%r{<row[^>]*>(.*?)</row>}m).map do |(row)|
+      row.scan(%r{<c r="([A-Z]+)\d+"[^>]*?>(?:<is><t>(.*?)</t></is>)?</c>}m)
+    end
+  end
+
+  # The <xf> cell format a given cell points at, so alignment can be asserted.
+  def cell_format(binary, reference)
+    style_id = zip_entry(binary, "xl/worksheets/sheet1.xml")[/<c r="#{reference}" s="(\d+)"/, 1]
+    formats = zip_entry(binary, "xl/styles.xml")[%r{<cellXfs[^>]*>(.*?)</cellXfs>}m, 1]
+
+    formats.scan(%r{<xf .*?(?:/>|</xf>)}m)[style_id.to_i]
+  end
+
   test "renders a parseable xlsx package with main and summary sheets" do
     report = build_report(users(:one))
 
@@ -51,6 +76,32 @@ class Overtimes::Export::ExcelTest < ActiveSupport::TestCase
 
     assert_equal format("%02d:%02d", row_minutes / 60, row_minutes % 60), report.formatted_total
     assert_includes xlsx_text(report.render), "01:01"
+  end
+
+  test "the period total sits in the last column, not under Início" do
+    report = build_report(users(:one))
+
+    rows = sheet_cells(report.render)
+    header = rows.first
+    total = rows.last
+
+    assert_equal "Total de horas no período", total.first.last
+    assert_equal "E", header.last.first, "the sheet must have five columns"
+
+    value = total.find { |_column, text| text == report.formatted_total }
+
+    assert_not_nil value, "the total value is missing from the total row"
+    assert_equal "E", value.first, "the total must line up with the PDF footer, not with Início"
+  end
+
+  test "description cells wrap inside their fixed column width" do
+    binary = build_report(users(:one)).render
+
+    format = cell_format(binary, "E2")
+
+    assert_match(/wrapText="(1|true)"/, format)
+    assert_match(/vertical="top"/, format)
+    assert_match(/<col width="60" min="5" max="5"/, zip_entry(binary, "xl/worksheets/sheet1.xml"))
   end
 
   test "summary sheet holds the user block without the email" do
