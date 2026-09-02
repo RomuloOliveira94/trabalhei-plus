@@ -1,6 +1,13 @@
 require "test_helper"
+require "nokogiri"
 
 class Overtimes::Export::ExcelTest < ActiveSupport::TestCase
+  # The xlsx parts live in the SpreadsheetML namespace, so every XPath below
+  # has to go through a prefix. Reading attributes by name (instead of
+  # matching the serialized tag) keeps these helpers immune to caxlsx
+  # reordering or adding attributes between releases.
+  SPREADSHEET_NS = { "s" => "http://schemas.openxmlformats.org/spreadsheetml/2006/main" }.freeze
+
   def build_report(user, from: nil, to: nil)
     Overtimes::Export::Excel.new(user, from: from, to: to)
   end
@@ -13,21 +20,36 @@ class Overtimes::Export::ExcelTest < ActiveSupport::TestCase
     entry
   end
 
+  def sheet_xml(binary, sheet: 1)
+    Nokogiri::XML(zip_entry(binary, "xl/worksheets/sheet#{sheet}.xml"))
+  end
+
   # caxlsx writes cell text inline (`t="inlineStr"`), so the sheet XML alone is
   # enough to assert on positions. Returns one array of [ column, text ] pairs
-  # per row, e.g. [ [ "A", "Data" ], [ "B", "Início" ], ... ].
+  # per row, e.g. [ [ "A", "Data" ], [ "B", "Início" ], ... ]. Cells with no
+  # value (the padding of the total row) come back with a nil text.
   def sheet_cells(binary, sheet: 1)
-    zip_entry(binary, "xl/worksheets/sheet#{sheet}.xml").scan(%r{<row[^>]*>(.*?)</row>}m).map do |(row)|
-      row.scan(%r{<c r="([A-Z]+)\d+"[^>]*?>(?:<is><t>(.*?)</t></is>)?</c>}m)
+    sheet_xml(binary, sheet: sheet).xpath("//s:sheetData/s:row", SPREADSHEET_NS).map do |row|
+      row.xpath("s:c", SPREADSHEET_NS).map do |cell|
+        [ cell["r"][/\A[A-Z]+/], cell.at_xpath("s:is/s:t", SPREADSHEET_NS)&.text ]
+      end
     end
   end
 
   # The <xf> cell format a given cell points at, so alignment can be asserted.
   def cell_format(binary, reference)
-    style_id = zip_entry(binary, "xl/worksheets/sheet1.xml")[/<c r="#{reference}" s="(\d+)"/, 1]
-    formats = zip_entry(binary, "xl/styles.xml")[%r{<cellXfs[^>]*>(.*?)</cellXfs>}m, 1]
+    cell = sheet_xml(binary).at_xpath("//s:c[@r='#{reference}']", SPREADSHEET_NS)
+    formats = Nokogiri::XML(zip_entry(binary, "xl/styles.xml")).xpath("//s:cellXfs/s:xf", SPREADSHEET_NS)
 
-    formats.scan(%r{<xf .*?(?:/>|</xf>)}m)[style_id.to_i]
+    formats[cell["s"].to_i]
+  end
+
+  # Declared width of a 1-based column index, from the sheet's <cols> block.
+  def column_width(binary, index, sheet: 1)
+    column = sheet_xml(binary, sheet: sheet)
+      .at_xpath("//s:cols/s:col[@min='#{index}'][@max='#{index}']", SPREADSHEET_NS)
+
+    column && column["width"].to_f
   end
 
   test "renders a parseable xlsx package with main and summary sheets" do
@@ -97,11 +119,11 @@ class Overtimes::Export::ExcelTest < ActiveSupport::TestCase
   test "description cells wrap inside their fixed column width" do
     binary = build_report(users(:one)).render
 
-    format = cell_format(binary, "E2")
+    alignment = cell_format(binary, "E2").at_xpath("s:alignment", SPREADSHEET_NS)
 
-    assert_match(/wrapText="(1|true)"/, format)
-    assert_match(/vertical="top"/, format)
-    assert_match(/<col width="60" min="5" max="5"/, zip_entry(binary, "xl/worksheets/sheet1.xml"))
+    assert_includes %w[ 1 true ], alignment["wrapText"]
+    assert_equal "top", alignment["vertical"]
+    assert_equal 60.0, column_width(binary, 5)
   end
 
   test "summary sheet holds the user block without the email" do
