@@ -1,3 +1,20 @@
+# CD — gate on CI, build the image here, let CapRover pull the finished image.
+#
+#   push to main → wait_for_ci      polls ci.yml for this exact SHA and only
+#                                   proceeds if it went green
+#                → build_and_deploy `docker build` on the Actions runner, push
+#                                   to ghcr.io/<owner>/<repo>:<sha7> (+ :latest),
+#                                   then hand CapRover the image name — the
+#                                   server only has to `docker pull` it.
+#
+# CapRover no longer builds anything. The previous flow uploaded a tarball of the
+# repo and ran `docker build` server-side from the Dockerfile that
+# `captain-definition` points at; that file stays in the repo root for manual
+# tarball deploys (`caprover deploy`), but CD does not use it any more.
+#
+# Prerequisite on the CapRover side: the ghcr.io package is private by default,
+# so ghcr.io must be registered under Cluster → Docker Registries with a PAT that
+# has `read:packages`, otherwise the pull fails with "unauthorized".
 name: CD
 
 on:
@@ -74,26 +91,74 @@ jobs:
           echo "Timed out waiting for CI to complete on ${sha}."
           exit 1
 
-  deploy:
-    name: Deploy to CapRover
+  build_and_deploy:
+    name: Build the image and deploy it to CapRover
     needs: wait_for_ci
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    # `packages: write` is what lets the built-in GITHUB_TOKEN push to ghcr.io,
+    # so no PAT has to live in the repo. If an org policy ever stops GITHUB_TOKEN
+    # from writing packages, put a classic PAT with `write:packages` in
+    # `secrets.ACCESS_TOKEN` and use it as the login password instead.
+    # Job-level permissions replace the workflow-level block: this job does not
+    # need the `actions: read` the CI poll uses.
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      # Tarball method (caprover/deploy-from-github v1.0.1): pack the repo
-      # plus captain-definition into ./deploy.tar and hand it to the action,
-      # which uploads it to CapRover for a server-side `docker build` from
-      # the Dockerfile. No Node/npm step — this app has no package.json
-      # (Importmap + tailwindcss-rails), so there's nothing to build here.
-      - name: Build deployment tarball
-        run: tar -cf deploy.tar --exclude='.git' --exclude='deploy.tar' .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
 
-      - name: Deploy to CapRover
-        uses: caprover/deploy-from-github@v1.0.1
+      - name: Log in to ghcr.io
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ghcr.io only accepts lowercase image paths and this owner is mixed-case
+      # (RomuloOliveira94), hence the `tr`. The 7-char SHA tag is the immutable
+      # one CapRover deploys and the one to roll back to; `:latest` is a
+      # convenience pointer for manual pulls.
+      - name: Preset image name
+        run: |
+          set -euo pipefail
+          image=$(echo "ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
+          {
+            echo "IMAGE_URL=${image}:$(echo "${{ github.sha }}" | cut -c1-7)"
+            echo "IMAGE_LATEST=${image}:latest"
+          } >> "$GITHUB_ENV"
+
+      # No Node/npm step — this app has no package.json (Importmap +
+      # tailwindcss-rails), the Dockerfile does everything. The layer cache lives
+      # in the Actions cache, so an unchanged Gemfile.lock skips `bundle install`
+      # on the next run.
+      - name: Build and push the image to ghcr.io
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_URL }}
+            ${{ env.IMAGE_LATEST }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # `image:` (added in v1.1.0) makes CapRover pull that tag instead of
+      # accepting an uploaded tarball. v1.1.2 is the first release whose
+      # `runs.image` is its own `Dockerfile` rather than the floating
+      # `docker://ghcr.io/caprover/deploy-from-github:main` container — up to
+      # v1.1.1, pinning the tag pinned nothing, since the action still pulled
+      # whatever `:main` happened to be. Pinned to the exact tag: this action
+      # publishes no moving `v1` pointer.
+      - name: Deploy the image to CapRover
+        uses: caprover/deploy-from-github@v1.1.2
         with:
           server: '${{ secrets.CAPROVER_SERVER }}'
           app: '${{ secrets.CAPROVER_APP_NAME }}'
           token: '${{ secrets.CAPROVER_APP_TOKEN }}'
+          image: '${{ env.IMAGE_URL }}'

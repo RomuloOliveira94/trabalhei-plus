@@ -49,7 +49,7 @@ Sem Node, sem Redis — Rails 8.1 com SQLite e importmap mantém o setup local e
 | Assets JS | Importmap (sem Node/Webpack) |
 | CSS | Tailwind CSS |
 | Testes | Minitest + Capybara (headless Chrome) |
-| Deploy | CD no [CapRover](https://caprover.com/) via GitHub Actions ([Kamal](https://kamal-deploy.org/) para deploy manual) |
+| Deploy | CD no [CapRover](https://caprover.com/) via GitHub Actions — imagem construída no Actions e publicada no `ghcr.io` ([Kamal](https://kamal-deploy.org/) para deploy manual) |
 
 ## 🚀 Como rodar localmente
 
@@ -106,7 +106,38 @@ bin/ci                                # gate completo (lint + segurança + teste
 
 ## 🚢 Deploy
 
-O deploy contínuo para produção roda no [CapRover](https://caprover.com/), disparado a cada push em `main` (`.github/workflows/cd.yml`). Como aqui o trabalho vai direto para a `main` (sem fluxo de PR e sem branch protection), o gate é o próprio workflow: ele só implanta depois de confirmar que o CI (`.github/workflows/ci.yml`) passou **na mesma revisão** — os 5 jobs (`test`, `system-test`, `lint`, `scan_ruby`, `scan_js`) nunca são pulados nem duplicados, só aguardados. Também dá para disparar um redeploy manual pela aba Actions (`workflow_dispatch`). O `captain-definition` na raiz do repositório aponta o CapRover para o `Dockerfile` existente.
+O deploy contínuo para produção roda no [CapRover](https://caprover.com/), disparado a cada push em `main` (`.github/workflows/cd.yml`). Como aqui o trabalho vai direto para a `main` (sem fluxo de PR e sem branch protection), o gate é o próprio workflow: ele só implanta depois de confirmar que o CI (`.github/workflows/ci.yml`) passou **na mesma revisão** — os 5 jobs (`test`, `system-test`, `lint`, `scan_ruby`, `scan_js`) nunca são pulados nem duplicados, só aguardados. Também dá para disparar um redeploy manual pela aba Actions (`workflow_dispatch`).
+
+Passado o gate, a imagem é construída **no próprio runner do GitHub Actions** (`docker/build-push-action`, a partir do `Dockerfile` da raiz) e publicada no GitHub Container Registry em duas tags:
+
+| Tag | Para quê |
+|---|---|
+| `ghcr.io/romulooliveira94/trabalhei-plus:<sha7>` | Tag imutável (7 primeiros caracteres do commit). É ela que o CapRover recebe — e a que se usa para rollback |
+| `ghcr.io/romulooliveira94/trabalhei-plus:latest` | Ponteiro para o último deploy; conveniência para `docker pull` manual |
+
+O CapRover **não constrói mais nada**: o workflow passa o nome da imagem para o `caprover/deploy-from-github` e o servidor só faz `docker pull`. Quem publica o pacote é o `GITHUB_TOKEN` do próprio workflow (o job declara `permissions: packages: write`) — nenhum PAT fica guardado no repositório. O cache de camadas do build fica no cache do Actions (`type=gha`), então um `Gemfile.lock` inalterado pula o `bundle install` na próxima execução.
+
+O `captain-definition` na raiz continua versionado, mas **não é mais usado pelo CD**: ele serve apenas para um deploy manual por tarball (`caprover deploy`), em que o CapRover constrói a imagem no servidor.
+
+### Registro do ghcr.io no CapRover (obrigatório)
+
+Pacotes do GitHub Container Registry nascem **privados**, então o servidor precisa de credencial para baixar a imagem. Em **Cluster → Docker Registries** → *Add Remote Registry*:
+
+| Campo | Valor |
+|---|---|
+| Registry Domain | `ghcr.io` |
+| Username | seu usuário do GitHub (`RomuloOliveira94`) |
+| Password | um PAT clássico com o escopo `read:packages` |
+
+Sem isso o deploy falha no `docker pull` com `unauthorized`. (Alternativa: tornar o pacote público em **Packages** → o pacote → *Package settings* → *Change visibility*.)
+
+### Rollback
+
+As tags por SHA ficam todas no ghcr.io, então voltar uma versão não exige rebuild. No painel do CapRover, aba **Deployment** do app → **Deploy via ImageName**, informe a tag antiga e implante:
+
+```
+ghcr.io/romulooliveira94/trabalhei-plus:<sha7-antigo>
+```
 
 ### Segredos do GitHub Actions
 
@@ -119,6 +150,8 @@ Configure em Settings → Secrets and variables → Actions do repositório (nen
 | `CAPROVER_APP_TOKEN` | Token de deploy do app |
 
 Para gerar o token: na aba **Deployment** do app no painel do CapRover, clique em **Enable App Token** e copie o valor gerado.
+
+Não há secret para o `ghcr.io` — o push da imagem usa o `GITHUB_TOKEN` que o próprio Actions injeta. Se algum dia uma policy de organização bloquear a escrita de packages pelo `GITHUB_TOKEN`, crie um PAT clássico com `write:packages`, guarde-o em `secrets.ACCESS_TOKEN` e troque a senha do step de login do `cd.yml`.
 
 ### Variáveis de ambiente do app no CapRover
 
