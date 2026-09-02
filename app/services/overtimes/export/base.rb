@@ -19,10 +19,12 @@ module Overtimes
       end
 
       # Kept only (SPEC R11) — discarded records never reach an export. The
-      # date range is widened to full days in the app zone so both ends are
-      # inclusive, mirroring the controller filter.
+      # model's default scope already applies `kept`, so no explicit filter is
+      # needed here (adding one would duplicate `discarded_at IS NULL` in the
+      # WHERE clause). The date range is widened to full days in the app zone
+      # so both ends are inclusive, mirroring the controller filter.
       def overtimes
-        @overtimes ||= user.overtimes.kept
+        @overtimes ||= user.overtimes
           .within_period(from.in_time_zone.beginning_of_day, to.in_time_zone.end_of_day)
           .chronological
       end

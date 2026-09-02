@@ -76,6 +76,20 @@ class OvertimesTest < ActionDispatch::IntegrationTest
     assert_match "Deploy urgente", response.body
   end
 
+  test "create accepts the commit submit-button param" do
+    sign_in users(:one)
+
+    assert_difference -> { users(:one).overtimes.count }, 1 do
+      post overtimes_path, params: { commit: "Salvar", overtime: {
+        start_at: "#{@current_month_day}T18:00",
+        end_at: "#{@current_month_day}T20:00",
+        description: "Com botão de submit"
+      } }
+    end
+
+    assert_redirected_to overtimes_path
+  end
+
   test "create with end before start re-renders the form with errors" do
     sign_in users(:one)
 

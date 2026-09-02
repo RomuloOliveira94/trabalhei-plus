@@ -83,4 +83,17 @@ class OvertimeExportTest < ActionDispatch::IntegrationTest
     assert_redirected_to overtimes_path
     assert_equal "Não há horas extras no período selecionado para exportar.", flash[:alert]
   end
+
+  test "export accepts the commit submit-button param without warnings" do
+    sign_in users(:one)
+
+    get export_overtimes_pdf_path, params: {
+      commit: "Exportar PDF",
+      from: Date.current.beginning_of_month.to_s,
+      to: Date.current.end_of_month.to_s
+    }
+
+    assert_response :success
+    assert response.body.start_with?("%PDF-")
+  end
 end

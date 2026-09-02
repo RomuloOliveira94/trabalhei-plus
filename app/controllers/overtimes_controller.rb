@@ -128,11 +128,16 @@ class OvertimesController < ApplicationController
     end
 
     def overtime_params
-      params.expect(overtime: [ :start_at, :end_at, :description ])
+      # `commit` is the submit-button value and `from`/`to` are the hidden
+      # filter fields Rails appends to every form POST; permitting them
+      # silences the "Unpermitted parameter" log noise. The permit-then-
+      # require order keeps the same 400-on-missing behavior as `expect`
+      # while allowing the optional top-level keys.
+      params.permit(:commit, :from, :to, overtime: [ :start_at, :end_at, :description ]).require(:overtime)
     end
 
     def export_params
-      params.permit(:from, :to)
+      params.permit(:commit, :from, :to)
     end
 
     def index_search_params
