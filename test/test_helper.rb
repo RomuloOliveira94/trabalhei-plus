@@ -6,11 +6,10 @@ require "zip"
 # Helpers shared by unit, integration and system tests to assert on the text
 # content of exported binaries (PDF glyph streams and xlsx shared strings).
 module ExportTestHelpers
-  # Prawn writes text as hex-encoded glyph codes in uncompressed content
-  # streams, with per-font ToUnicode CMaps. Decode both to get readable text
-  # for assertions.
-  def pdf_text(pdf)
-    raw = pdf.b
+  # Prawn writes text as hex-encoded strings inside uncompressed content
+  # streams. When DejaVu Sans is embedded those are subset glyph ids that only
+  # the font's ToUnicode CMap can resolve, so collect the CMap first.
+  def pdf_to_unicode_cmap(raw)
     cmap = {}
     raw.scan(/beginbfchar\n(.*?)\nendbfchar/m).each do |block|
       block[0].scan(/<([0-9A-Fa-f]+)><([0-9A-Fa-f]+)>/).each do |code, uni|
@@ -25,13 +24,27 @@ module ExportTestHelpers
         (lo_i..hi_i).each_with_index { |code, i| cmap[code] = [ uni_i + i ].pack("U") }
       end
     end
-    text = +""
-    raw.scan(/BT(.*?)ET/m).each do |block|
-      block[0].scan(/<([0-9A-Fa-f]+)>/).each do |(hex)|
-        hex.scan(/../).each { |byte| text << (cmap[byte.to_i(16)] || byte.to_i(16).chr) }
-      end
-    end
-    text
+    cmap
+  end
+
+  # Turns one hex string from a `Tj`/`TJ` operator into readable text. Without
+  # a CMap the document is on the Helvetica fallback path (Prawn's built-in
+  # AFM fonts embed no ToUnicode), where the bytes are literal WinAnsi code
+  # points -- which is where the pt-BR accents of "Início" and "Duração" live.
+  def decode_pdf_hex(hex, cmap)
+    codes = hex.scan(/../).map { |byte| byte.to_i(16) }
+    return codes.map { |code| cmap[code] || code.chr }.join if cmap.any?
+
+    codes.pack("C*").encode("UTF-8", "Windows-1252", invalid: :replace, undef: :replace)
+  end
+
+  def pdf_text(pdf)
+    raw = pdf.b
+    cmap = pdf_to_unicode_cmap(raw)
+
+    raw.scan(/BT(.*?)ET/m).flat_map do |block|
+      block[0].scan(/<([0-9A-Fa-f]+)>/).map { |(hex)| decode_pdf_hex(hex, cmap) }
+    end.join
   end
 
   # Concatenates every XML part of the workbook so assertions can grep for

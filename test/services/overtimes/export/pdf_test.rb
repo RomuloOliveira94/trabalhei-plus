@@ -10,22 +10,11 @@ class Overtimes::Export::PdfTest < ActiveSupport::TestCase
   # Prawn draws table cell backgrounds as `x y w h re f` and text as
   # `BT x y Td /F 9 Tf <hex> Tj ET` (or a `[<hex> ...] TJ` array when the
   # line needs kerning adjustments, as wrapped description lines do).
+  # Glyph decoding is shared with `pdf_text` so both the embedded-DejaVu and
+  # the Helvetica fallback encodings are understood (see ExportTestHelpers).
   def pdf_geometry(pdf)
     raw = pdf.b
-    cmap = {}
-    raw.scan(/beginbfchar\n(.*?)\nendbfchar/m).each do |block|
-      block[0].scan(/<([0-9A-Fa-f]+)><([0-9A-Fa-f]+)>/).each do |code, uni|
-        cmap[code.to_i(16)] = [ uni ].pack("H*").force_encoding("UTF-16BE").encode("UTF-8")
-      end
-    end
-    raw.scan(/beginbfrange\n(.*?)\nendbfrange/m).each do |block|
-      block[0].scan(/<([0-9A-Fa-f]+)><([0-9A-Fa-f]+)><([0-9A-Fa-f]+)>/).each do |lo, hi, uni|
-        lo_i = lo.to_i(16)
-        hi_i = hi.to_i(16)
-        uni_i = uni.to_i(16)
-        (lo_i..hi_i).each_with_index { |code, i| cmap[code] = [ uni_i + i ].pack("U") }
-      end
-    end
+    cmap = pdf_to_unicode_cmap(raw)
 
     rects = []
     runs = []
@@ -41,9 +30,9 @@ class Overtimes::Export::PdfTest < ActiveSupport::TestCase
         when /^([\d.]+) ([\d.]+) Td$/
           position = [ $1.to_f, $2.to_f ]
         when /^<([0-9A-Fa-f]+)> Tj$/
-          runs << { x: position[0], y: position[1], text: decode_hex($1, cmap) } if position
+          runs << { x: position[0], y: position[1], text: decode_pdf_hex($1, cmap) } if position
         when /^\[(.*?)\] TJ$/
-          text = $1.scan(/<([0-9A-Fa-f]+)>/).map { |(hex)| decode_hex(hex, cmap) }.join
+          text = $1.scan(/<([0-9A-Fa-f]+)>/).map { |(hex)| decode_pdf_hex(hex, cmap) }.join
           runs << { x: position[0], y: position[1], text: text } if position
         end
       end
@@ -51,8 +40,18 @@ class Overtimes::Export::PdfTest < ActiveSupport::TestCase
     { rects: rects, runs: runs }
   end
 
-  def decode_hex(hex, cmap)
-    hex.scan(/../).map { |byte| cmap[byte.to_i(16)] || byte.to_i(16).chr }.join
+  # Runs the block as if the machine had no DejaVu Sans installed, which is
+  # the case in the production Docker image. Minitest 6 no longer ships
+  # `minitest/mock`, so swap the singleton method by hand.
+  def without_dejavu_fonts
+    original = Overtimes::Export::Pdf.method(:dejavu_family)
+    warned = Prawn::Fonts::AFM.hide_m17n_warning
+    Prawn::Fonts::AFM.hide_m17n_warning = true
+    Overtimes::Export::Pdf.define_singleton_method(:dejavu_family) { nil }
+    yield
+  ensure
+    Overtimes::Export::Pdf.define_singleton_method(:dejavu_family, original)
+    Prawn::Fonts::AFM.hide_m17n_warning = warned
   end
 
   test "renders a valid PDF for a user with records in the period" do
@@ -186,5 +185,29 @@ class Overtimes::Export::PdfTest < ActiveSupport::TestCase
     description_runs = geometry[:runs].select { |r| r[:x] > 265 && r[:y] < 682 && r[:y] > 560 }
     assert_operator description_runs.size, :>, 2, "long description must wrap across multiple lines"
     assert_operator description_runs.map { |r| r[:text].length }.sum, :>, 500
+  end
+
+  test "the Helvetica fallback still fits the headers and dates on one line" do
+    # The production image ships no DejaVu Sans, so PDFs render with Prawn's
+    # built-in Helvetica, whose wider metrics have to fit the same fixed
+    # column widths. That is what `overflow: :shrink_to_fit` guards, and this
+    # is the only test that walks the fallback branch of #register_font.
+    report = build_report(users(:one))
+    pdf = without_dejavu_fonts { report.render }
+
+    assert_includes pdf, "/BaseFont /Helvetica", "the fallback must use the built-in AFM font"
+    assert_not_includes pdf, "DejaVu"
+
+    geometry = pdf_geometry(pdf)
+    header_texts = geometry[:runs].select { |run| run[:y] > 682 }.map { |run| run[:text] }
+    %w[Data Início Fim Duração Descrição].each do |label|
+      assert_includes header_texts, label, "#{label} must render as one run without DejaVu"
+    end
+
+    # The body date is the cell the original wrapping bug ("01/09/20\n26") hit.
+    expected_date = report.row_for(report.overtimes.first).first
+    body_texts = geometry[:runs].select { |run| run[:y] < 682 && run[:y] > 560 }.map { |run| run[:text] }
+
+    assert_includes body_texts, expected_date
   end
 end
