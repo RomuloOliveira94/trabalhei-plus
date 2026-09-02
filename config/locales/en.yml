@@ -115,6 +115,7 @@ en:
       column_end: "End"
       column_duration: "Duration"
       column_description: "Description"
+      empty_filter: "There are no overtime records in the selected period to export."
     action_buttons:
       edit: "Edit"
       delete: "Delete"

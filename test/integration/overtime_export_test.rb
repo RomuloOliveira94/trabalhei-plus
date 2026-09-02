@@ -57,4 +57,30 @@ class OvertimeExportTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match(/horas_extras_ana-souza_#{month.beginning_of_month.strftime('%Y%m%d')}_a_#{month.end_of_month.strftime('%Y%m%d')}\.pdf/, response.headers["Content-Disposition"])
   end
+
+  test "export_pdf redirects with an alert when the filter has no records" do
+    sign_in users(:one)
+    next_month = Date.current.next_month
+
+    get export_overtimes_pdf_path, params: {
+      from: next_month.beginning_of_month.to_s,
+      to: next_month.end_of_month.to_s
+    }
+
+    assert_redirected_to overtimes_path
+    assert_equal "Não há horas extras no período selecionado para exportar.", flash[:alert]
+  end
+
+  test "export_xlsx redirects with an alert when the filter has no records" do
+    sign_in users(:one)
+    next_month = Date.current.next_month
+
+    get export_overtimes_xlsx_path, params: {
+      from: next_month.beginning_of_month.to_s,
+      to: next_month.end_of_month.to_s
+    }
+
+    assert_redirected_to overtimes_path
+    assert_equal "Não há horas extras no período selecionado para exportar.", flash[:alert]
+  end
 end

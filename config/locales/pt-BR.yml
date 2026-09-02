@@ -113,6 +113,7 @@ pt-BR:
       column_end: "Fim"
       column_duration: "Duração"
       column_description: "Descrição"
+      empty_filter: "Não há horas extras no período selecionado para exportar."
     action_buttons:
       edit: "Editar"
       delete: "Apagar"
