@@ -14,9 +14,12 @@ FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 # Rails app lives here
 WORKDIR /rails
 
-# Install base packages
+# Install base packages. fonts-dejavu-core ships DejaVuSans.ttf and
+# DejaVuSans-Bold.ttf under /usr/share/fonts/truetype/dejavu/, the exact paths
+# Overtimes::Export::Pdf looks for — without it the PDF export silently falls
+# back to Prawn's built-in Helvetica and logs an m17n warning on every export.
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips sqlite3 && \
+    apt-get install --no-install-recommends -y curl fonts-dejavu-core libjemalloc2 libvips sqlite3 && \
     ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
