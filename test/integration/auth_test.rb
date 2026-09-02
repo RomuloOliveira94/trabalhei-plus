@@ -29,6 +29,54 @@ class AuthTest < ActionDispatch::IntegrationTest
     assert_select "label", "Senha"
   end
 
+  test "sign up persists the name and signs the user in" do
+    assert_difference -> { User.count }, 1 do
+      post user_registration_path, params: {
+        user: {
+          name: "Fulano da Silva",
+          email: "fulano@example.com",
+          password: "password123",
+          password_confirmation: "password123"
+        }
+      }
+    end
+
+    assert_response :redirect
+    assert_equal "Fulano da Silva", User.find_by(email: "fulano@example.com").name
+    assert_not_nil session["warden.user.user.key"]
+  end
+
+  test "sign up without a name is rejected with the pt-BR blank message" do
+    assert_no_difference -> { User.count } do
+      post user_registration_path, params: {
+        user: {
+          name: "",
+          email: "sem.nome@example.com",
+          password: "password123",
+          password_confirmation: "password123"
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_match "Nome não pode ficar em branco", response.body
+  end
+
+  test "account update persists a new name" do
+    sign_in users(:one)
+
+    patch user_registration_path, params: {
+      user: {
+        name: "Ana Souza Atualizada",
+        email: users(:one).email,
+        current_password: "password123"
+      }
+    }
+
+    assert_response :redirect
+    assert_equal "Ana Souza Atualizada", users(:one).reload.name
+  end
+
   test "signs in with valid credentials" do
     post user_session_path, params: { user: { email: users(:one).email, password: "password123" } }
 
