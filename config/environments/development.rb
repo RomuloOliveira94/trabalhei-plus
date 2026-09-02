@@ -18,6 +18,17 @@ Rails.application.configure do
   # Enable server timing.
   config.server_timing = true
 
+  # Host Authorization: allow the app to be reached through an ngrok tunnel in
+  # development (`ngrok http 3000`), which otherwise gets 403 Forbidden. The
+  # regexes keep working when the free-plan subdomain rotates.
+  config.hosts += [
+    "rich-neutral-burro.ngrok-free.app",
+    /.*\.ngrok-free\.app\z/,
+    /.*\.ngrok\.app\z/,
+    /.*\.ngrok-free\.dev\z/,
+    /.*\.ngrok\.io\z/
+  ]
+
   # Enable/disable Action Controller caching. By default Action Controller caching is disabled.
   # Run rails dev:cache to toggle Action Controller caching.
   if Rails.root.join("tmp/caching-dev.txt").exist?
