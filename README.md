@@ -106,16 +106,18 @@ bin/ci                                # gate completo (lint + segurança + teste
 
 ## 🚢 Deploy
 
-O deploy contínuo para produção roda no [CapRover](https://caprover.com/), disparado a cada push em `main` (`.github/workflows/cd.yml`). Como aqui o trabalho vai direto para a `main` (sem fluxo de PR e sem branch protection), o gate é o próprio workflow: ele só implanta depois de confirmar que o CI (`.github/workflows/ci.yml`) passou **na mesma revisão** — os 5 jobs (`test`, `system-test`, `lint`, `scan_ruby`, `scan_js`) nunca são pulados nem duplicados, só aguardados. Também dá para disparar um redeploy manual pela aba Actions (`workflow_dispatch`).
+O deploy contínuo para produção roda no [CapRover](https://caprover.com/), disparado a cada push em `main` (`.github/workflows/cd.yml`). O dono do repositório (admin) empurra direto para a `main` — o ruleset da branch reserva esse bypass para ele —, e nesses pushes o gate é o próprio workflow: ele só implanta depois de confirmar que o CI (`.github/workflows/ci.yml`) passou **na mesma revisão** — os 5 checks (`test`, `system-test`, `lint`, `scan_ruby`, `scan_js`) nunca são pulados nem duplicados, só aguardados. Qualquer outra pessoa precisa abrir um **Pull Request**, que só entra com a aprovação de um code owner (`.github/CODEOWNERS`) e com esses mesmos 5 checks verdes. Também dá para disparar um redeploy manual pela aba Actions (`workflow_dispatch`).
 
 Passado o gate, a imagem é construída **no próprio runner do GitHub Actions** (`docker/build-push-action`, a partir do `Dockerfile` da raiz) e publicada no GitHub Container Registry em duas tags:
 
 | Tag | Para quê |
 |---|---|
 | `ghcr.io/romulooliveira94/trabalhei-plus:<sha7>` | Tag imutável (7 primeiros caracteres do commit). É ela que o CapRover recebe — e a que se usa para rollback |
-| `ghcr.io/romulooliveira94/trabalhei-plus:latest` | Ponteiro para o último deploy; conveniência para `docker pull` manual |
+| `ghcr.io/romulooliveira94/trabalhei-plus:latest` | Ponteiro para o último **build** da `main` — não necessariamente o que está no ar: um rollback troca a imagem do app sem mexer nesta tag. Conveniência para `docker pull` manual |
 
 O CapRover **não constrói mais nada**: o workflow passa o nome da imagem para o `caprover/deploy-from-github` e o servidor só faz `docker pull`. Quem publica o pacote é o `GITHUB_TOKEN` do próprio workflow (o job declara `permissions: packages: write`) — nenhum PAT fica guardado no repositório. O cache de camadas do build fica no cache do Actions (`type=gha`), então um `Gemfile.lock` inalterado pula o `bundle install` na próxima execução.
+
+⚠️ **Um run verde do CD não prova que o deploy subiu.** O step do CapRover retorna assim que o servidor *aceita* a requisição — deploy por App Token não transmite o log de build de volta —, então um `docker pull` que falha (PAT do registry expirado, registry errado) ou um container em crash loop aparecem **só** no painel do CapRover, nas abas **Deployment** e **App Logs**; o run do Actions continua verde. Depois de cada deploy, confira o `/up` do app.
 
 O `captain-definition` na raiz continua versionado, mas **não é mais usado pelo CD**: ele serve apenas para um deploy manual por tarball (`caprover deploy`), em que o CapRover constrói a imagem no servidor.
 
