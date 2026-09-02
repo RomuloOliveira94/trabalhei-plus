@@ -12,6 +12,13 @@
 en:
   hello: "Hello world"
   activerecord:
+    models:
+      user:
+        one: "User"
+        other: "Users"
+      overtime:
+        one: "Overtime"
+        other: "Overtime records"
     attributes:
       user:
         name: "Name"
@@ -39,6 +46,10 @@ en:
       sign_in: "Sign in"
       sign_out: "Sign out"
   devise:
+    shared:
+      minimum_password_length:
+        one: "(%{count} character minimum)"
+        other: "(%{count} characters minimum)"
     sessions:
       new:
         sign_in: "Sign in"
@@ -155,6 +166,10 @@ en:
     flash:
       close: "Close"
   errors:
+    messages:
+      not_saved:
+        one: "%{count} error prevented this %{resource} from being saved:"
+        other: "%{count} errors prevented this %{resource} from being saved:"
     not_found:
       title: "Page not found"
       body: "The page you are looking for does not exist or has been moved."

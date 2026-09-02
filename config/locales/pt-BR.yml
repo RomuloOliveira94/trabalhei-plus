@@ -1,5 +1,12 @@
 pt-BR:
   activerecord:
+    models:
+      user:
+        one: "Usuário"
+        other: "Usuários"
+      overtime:
+        one: "Hora extra"
+        other: "Horas extras"
     attributes:
       user:
         name: "Nome"
@@ -31,6 +38,12 @@ pt-BR:
       sign_in: "Entrar"
       sign_out: "Sair"
   devise:
+    # devise-i18n 1.16 ships pt-BR with these two keys present but nil, so
+    # they have to be filled in here or the views render "translation missing".
+    shared:
+      minimum_password_length:
+        one: "(mínimo de %{count} caractere)"
+        other: "(mínimo de %{count} caracteres)"
     omniauth_callbacks:
       success: "Autenticado com sucesso pela conta %{kind}."
       failure: "Não foi possível autenticar você via %{kind}: %{reason}."
@@ -153,6 +166,13 @@ pt-BR:
     flash:
       close: "Fechar"
   errors:
+    # Header of the Devise error summary (devise/shared/_error_messages).
+    # devise-i18n ships pt-BR nil values for it; wording mirrors the overtime
+    # form notice ("... impediu o salvamento da hora extra:").
+    messages:
+      not_saved:
+        one: "%{count} erro impediu o salvamento do %{resource}:"
+        other: "%{count} erros impediram o salvamento do %{resource}:"
     not_found:
       title: "Página não encontrada"
       body: "A página que você procura não existe ou foi movida."

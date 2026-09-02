@@ -24,11 +24,12 @@ module Trabalheiamais
     config.time_zone = "America/Sao_Paulo"
     config.active_record.default_timezone = :utc
 
-    # The default locale is pt-BR (see SPEC.md §10 Q2). English kept available
-    # as fallback so Rails/dev-facing messages still resolve.
+    # The default locale is pt-BR (see SPEC.md §10 Q2). English is the single
+    # fallback, so any key a gem ships only in :en (or leaves nil in pt-BR)
+    # still resolves instead of rendering "translation missing".
     config.i18n.default_locale = :"pt-BR"
     config.i18n.available_locales = [ :"pt-BR", :en ]
-    config.i18n.fallbacks = true
+    config.i18n.fallbacks = [ :en ]
 
     # Route exceptions through the app so the pt-BR error pages render
     # (ErrorsController + config/routes.rb /404 /422 /500).
