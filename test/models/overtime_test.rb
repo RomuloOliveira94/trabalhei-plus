@@ -105,6 +105,34 @@ class OvertimeTest < ActiveSupport::TestCase
     assert_equal 90, overtime.duration_minutes
   end
 
+  test "sum_duration_minutes rounds the SQLite julianday float instead of truncating" do
+    # julianday((17:03) - (16:02)) * 24 * 60 == 60.99999971687794 in SQLite;
+    # truncating dropped a whole minute from every total (index summary and
+    # the PDF/Excel footers alike).
+    odd = Overtime.create!(
+      user: users(:one),
+      start_at: Time.zone.local(2026, 9, 10, 16, 2, 0),
+      end_at: Time.zone.local(2026, 9, 10, 17, 3, 0),
+      description: "Virada de sessenta e um minutos"
+    )
+
+    assert_equal 61, Overtime.where(id: odd.id).sum_duration_minutes
+
+    others = Array.new(3) do |i|
+      Overtime.create!(
+        user: users(:one),
+        start_at: Time.zone.local(2026, 9, 11 + i, 20, 0, 0),
+        end_at: Time.zone.local(2026, 9, 11 + i, 21, 30, 0),
+        description: "Plantão #{i}"
+      )
+    end
+
+    relation = Overtime.where(id: [ odd, *others ].map(&:id))
+
+    assert_equal 331, relation.sum_duration_minutes
+    assert_equal relation.to_a.sum(&:duration_minutes), relation.sum_duration_minutes
+  end
+
   test "duration_hours_decimal rounds to two decimals" do
     overtime = Overtime.new(
       start_at: Time.zone.local(2026, 9, 1, 18, 0, 0),

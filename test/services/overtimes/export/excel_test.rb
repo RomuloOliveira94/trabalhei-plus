@@ -35,6 +35,24 @@ class Overtimes::Export::ExcelTest < ActiveSupport::TestCase
     assert_includes text, "03:30"
   end
 
+  test "total row matches the sum of the per-row durations" do
+    # See the PDF test: julianday returns 60.99999971687794 for this record.
+    month_start = Date.current.beginning_of_month
+    overtimes(:one).update!(
+      start_at: Time.zone.local(month_start.year, month_start.month, month_start.day, 16, 2, 0),
+      end_at: Time.zone.local(month_start.year, month_start.month, month_start.day, 17, 3, 0)
+    )
+
+    report = build_report(users(:one), from: month_start, to: month_start.end_of_month)
+    row_minutes = report.overtimes.sum do |overtime|
+      hours, minutes = overtime.duration_formatted_export.split(":").map(&:to_i)
+      hours * 60 + minutes
+    end
+
+    assert_equal format("%02d:%02d", row_minutes / 60, row_minutes % 60), report.formatted_total
+    assert_includes xlsx_text(report.render), "01:01"
+  end
+
   test "summary sheet holds the user block without the email" do
     report = build_report(users(:one))
     text = xlsx_text(report.render)

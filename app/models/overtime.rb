@@ -28,8 +28,12 @@ class Overtime < ApplicationRecord
   # Total duration (whole minutes) of the relation, computed in SQL via
   # SQLite's julianday arithmetic. The index summary and the export totals
   # use this so they never load every row into memory (memory → DB).
+  #
+  # julianday returns a float with binary rounding error (a 61-minute record
+  # yields 60.99999971687794), so the total must be rounded — truncating with
+  # `to_i` silently lost a minute per affected record.
   def self.sum_duration_minutes
-    sum("((julianday(end_at) - julianday(start_at)) * 24 * 60)").to_i
+    sum("((julianday(end_at) - julianday(start_at)) * 24 * 60)").round
   end
 
   # Whole minutes between start and end (negative when end < start).
