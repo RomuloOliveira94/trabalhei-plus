@@ -92,6 +92,7 @@ en:
       filter_from: "From"
       filter_to: "To"
       filter_submit: "Filter"
+      clear: "Clear filters"
     total_summary:
       total_hours: "Total hours in the period"
     empty_state:

@@ -11,4 +11,10 @@
     <%= f.date_field :start_at_lteq, class: "mt-1 block rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm transition-colors duration-150 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200" %>
   </div>
   <%= f.submit t(".filter_submit"), class: "cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200" %>
+  <%# Only shown while a Ransack date filter is active; links back to the
+      default current-month view (no params). A link inside a GET form does
+      not submit it — it navigates straight to overtimes_path. %>
+  <% if params[:q]&.dig(:start_at_gteq).present? || params[:q]&.dig(:start_at_lteq).present? %>
+    <%= link_to t(".clear"), overtimes_path, class: "cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200" %>
+  <% end %>
 <% end %>

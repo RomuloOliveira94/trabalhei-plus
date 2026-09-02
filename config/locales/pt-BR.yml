@@ -90,6 +90,7 @@ pt-BR:
       filter_from: "De"
       filter_to: "Até"
       filter_submit: "Filtrar"
+      clear: "Limpar filtros"
     total_summary:
       total_hours: "Total de horas no período"
     empty_state:
