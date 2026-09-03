@@ -47,7 +47,7 @@ gem "devise"
 # Community-managed translations for Devise [https://github.com/tigrish/devise-i18n]
 gem "devise-i18n"
 # CSRF protection for OmniAuth request phase [https://github.com/cookpad/omniauth-rails_csrf_protection]
-gem "omniauth-rails_csrf_protection", "~> 1.0"
+gem "omniauth-rails_csrf_protection", "~> 2.0"
 # Google OAuth2 strategy for OmniAuth [https://github.com/zquestz/omniauth-google-oauth2]
 gem "omniauth-google-oauth2", "~> 1.1"
 # Object-based search with whitelisted attributes [https://github.com/activerecord-hackery/ransack]
