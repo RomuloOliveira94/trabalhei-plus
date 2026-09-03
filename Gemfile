@@ -53,7 +53,7 @@ gem "omniauth-google-oauth2", "~> 1.1"
 # Object-based search with whitelisted attributes [https://github.com/activerecord-hackery/ransack]
 gem "ransack", "~> 4.3"
 # Soft delete via discarded_at column [https://github.com/jhawthorn/discard]
-gem "discard", "~> 1.4"
+gem "discard", "~> 2.0"
 # Pagination for the overtime list (buttons + infinite scroll) [https://github.com/ddnexus/pagy]
 gem "pagy", "~> 9.0"
 # PDF generation, pure Ruby, no Chrome [https://github.com/prawnpdf/prawn]
