@@ -156,7 +156,7 @@ jobs:
       # whatever `:main` happened to be. Pinned to the exact tag: this action
       # publishes no moving `v1` pointer.
       - name: Deploy the image to CapRover
-        uses: caprover/deploy-from-github@v1.1.2
+        uses: caprover/deploy-from-github@v2.0.0
         with:
           server: '${{ secrets.CAPROVER_SERVER }}'
           app: '${{ secrets.CAPROVER_APP_NAME }}'
