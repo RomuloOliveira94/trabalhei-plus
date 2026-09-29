@@ -51,7 +51,7 @@ gem "omniauth-rails_csrf_protection", "~> 1.0"
 # Google OAuth2 strategy for OmniAuth [https://github.com/zquestz/omniauth-google-oauth2]
 gem "omniauth-google-oauth2", "~> 1.1"
 # Object-based search with whitelisted attributes [https://github.com/activerecord-hackery/ransack]
-gem "ransack", "~> 4.3"
+gem "ransack", "~> 5.0"
 # Soft delete via discarded_at column [https://github.com/jhawthorn/discard]
 gem "discard", "~> 1.4"
 # Pagination for the overtime list (buttons + infinite scroll) [https://github.com/ddnexus/pagy]
