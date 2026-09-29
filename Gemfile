@@ -55,7 +55,7 @@ gem "ransack", "~> 4.3"
 # Soft delete via discarded_at column [https://github.com/jhawthorn/discard]
 gem "discard", "~> 1.4"
 # Pagination for the overtime list (buttons + infinite scroll) [https://github.com/ddnexus/pagy]
-gem "pagy", "~> 9.0"
+gem "pagy", "~> 43.6"
 # PDF generation, pure Ruby, no Chrome [https://github.com/prawnpdf/prawn]
 gem "prawn", "~> 2.5"
 # Table support for Prawn [https://github.com/prawnpdf/prawn-table]
